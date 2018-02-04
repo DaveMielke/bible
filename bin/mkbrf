@@ -1,0 +1,136 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+
+set brlttyRoot "/home/dave/brltty/git/main"
+set contractionTable "en-us-g2"
+set brailleWidth 40
+
+set textItalicSymbol "@"
+set brailleItalicSymbol "."
+
+proc getBrailleDirectory {} {
+   return [getBibleDirectory]
+}
+
+proc getBrailleExtension {} {
+   return .brf
+}
+
+proc writeBraille {braille} {
+   global brailleStream
+   puts $brailleStream $braille
+}
+
+proc startTranslator {} {
+   global translatorStream brlttyRoot contractionTable
+   set command [list [file join $brlttyRoot Programs brltty-ctb]]
+   lappend command -f
+   lappend command -T [file join $brlttyRoot Tables]
+   lappend command -c $contractionTable
+   lappend command -t "brf"
+   set translatorStream [open "|$command" {RDWR}]
+}
+
+proc stopTranslator {} {
+   global translatorStream
+   close $translatorStream; unset translatorStream
+}
+
+proc translateText {text} {
+   global translatorStream
+   puts $translatorStream $text
+   flush $translatorStream
+   return [gets $translatorStream]
+}
+
+proc convertText {text} {
+   global textItalicSymbol translatedItalicSymbol brailleItalicSymbol
+   set matches [regexp -inline -all -indices {{.*?}} $text]
+
+   while {![lempty $matches]} {
+      lassign [lvarpop matches end] first last
+      set words [split [string range $text [expr {$first + 1}] [expr {$last - 1}]] " "]
+
+      if {[llength $words] > 3} {
+         set word [lvarpop words end]
+         set characters "$textItalicSymbol$textItalicSymbol[join $words " "] $textItalicSymbol$word"
+      } else {
+         set characters "$textItalicSymbol[join $words " $textItalicSymbol"]"
+      }
+
+      set text [string replace $text $first $last $characters]
+   }
+
+   return [string map [list $translatedItalicSymbol $brailleItalicSymbol] [translateText $text]]
+}
+
+proc writeText {text} {
+   global brailleWidth
+   set braille [convertText $text]
+
+   while {[string length $braille] > $brailleWidth} {
+      if {[set index [string last " " [string range $braille 0 $brailleWidth]]] == -1} {
+         if {[set index [string first " " $braille $brailleWidth+1]] == -1} {
+            break
+         }
+      }
+
+      writeBraille [string range $braille 0 $index]
+      set braille [string range $braille $index+1 end]
+   }
+
+   writeBraille $braille
+}
+
+proc endBook {} {
+   global brailleStream
+
+   if {[info exists brailleStream]} {
+      writeBraille ""
+      close $brailleStream; unset brailleStream
+   }
+}
+
+loadBookDefinitions
+file mkdir [set brailleDirectory [getBrailleDirectory]]
+startTranslator
+
+set translatedItalicSymbol [translateText $textItalicSymbol]
+set currentBook ""
+set currentChapter ""
+
+forVerses {
+   set nextBook $bookKey
+   set nextChapter $chapterNumber
+   set newBook [expr {![string equal $nextBook $currentBook]}]
+   set newChapter [expr {$newBook || ($nextChapter != $currentChapter)}]
+
+   if {$newBook} {
+      endBook
+      set currentBook $bookKey
+      set bookType [getBookType $bookKey]
+      set brailleStream [open [file join $brailleDirectory "[getBookIdentifier $bookKey][getBrailleExtension]"] {WRONLY CREAT TRUNC}]
+      writeText [string toupper [getBookName $bookKey]]
+   }
+
+   if {$newChapter} {
+      set currentChapter $chapterNumber
+      writeBraille ""
+      writeText "[getChapterTitle_$bookType $chapterNumber]"
+   }
+
+   if {[string length $passageTitle] > 0} {
+      writeBraille ""
+      writeText "$passageTitle"
+   }
+
+   if {$verseNumber > 0} {
+      set verseText "$verseNumber: $verseText"
+   }
+
+   writeText $verseText
+}
+
+endBook
+stopTranslator
+exit 0

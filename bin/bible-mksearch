@@ -1,0 +1,8 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+startBasicDocument search [getSearchTitle]
+set substitutions(label.search) [getLabel_search]
+setSearchSubstitutions substitutions
+includeFile [file join [getLibraryDirectory] search.form] substitutions
+addSearchHelpParagraph
+endDocument

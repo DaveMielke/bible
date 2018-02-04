@@ -1,0 +1,13 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+set variables [list]
+lappend variables [list BIBLE_ROOT $bible(root)]
+lappend variables [list BIBLE_VERSION $bible(version)]
+file mkdir [file dirname [set file [getVariablesFile]]]
+set stream [open $file {WRONLY TRUNC CREAT}]
+foreach variable $variables {
+   lassign $variable name value
+   puts $stream "$name=$value"
+}
+close $stream; unset stream
+exit 0

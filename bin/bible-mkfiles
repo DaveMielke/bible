@@ -1,0 +1,8 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+file mkdir [set hypertextDirectory [getHypertextDirectory]]
+foreach name [glob -directory [set filesDirectory [getFilesDirectory]] -tails -nocomplain *] {
+   set path [file join $hypertextDirectory $name]
+   file delete -- $path
+   file copy -- [file join $filesDirectory $name] $path
+}

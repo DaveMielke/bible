@@ -1,0 +1,155 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+proc addLine {line} {
+   global lines
+   lappend lines $line
+}
+proc beginBook {key} {
+   global pdbBookNumbers
+   addLine "<BOOK NAME=\"[pdbBookName $key]\" NUMBER=\"$pdbBookNumbers($key)\" SHORTCUT=\"[pdbBookShortcut $key]\">"
+}
+proc pdbBookName {key} {
+   set name [getBookIdentifier $key]
+   regsub -all {(.)([A-Z])} $name {\1 \2} name
+   regsub -all { Of } $name { of } name
+   return $name
+}
+proc pdbBookShortcut {key} {
+   return [string toupper $key]
+}
+proc endBook {} {
+   addLine "</BOOK>"
+}
+proc beginChapter {} {
+   addLine "<CHAPTER>"
+}
+proc endChapter {} {
+   addLine "</CHAPTER>"
+}
+array set pdbBookNumbers {
+   gen  10
+   exo  20
+   lev  30
+   num  40
+   deu  50
+   jsh  60
+   jdg  70
+   rth  80
+   1sm  90
+   2sm 100
+   1kg 110
+   2kg 120
+   1ch 130
+   2ch 140
+   ezr 150
+   neh 160
+   est 190
+   job 220
+   psa 230
+   pro 240
+   ecc 250
+   sol 260
+   isa 290
+   jer 300
+   lam 310
+   eze 330
+   dan 340
+   hos 350
+   jol 360
+   amo 370
+   oba 380
+   jon 390
+   mic 400
+   nah 410
+   hab 420
+   zph 430
+   hag 440
+   zch 450
+   mal 460
+   mat 470
+   mrk 480
+   luk 490
+   jhn 500
+   act 510
+   rom 520
+   1co 530
+   2co 540
+   gal 550
+   eph 560
+   plp 570
+   col 580
+   1th 590
+   2th 600
+   1tm 610
+   2tm 620
+   tit 630
+   plm 640
+   heb 650
+   jam 660
+   1pt 670
+   2pt 680
+   1jn 690
+   2jn 700
+   3jn 710
+   jud 720
+   rev 730
+}
+set lines [list]
+loadBookDefinitions
+addLine "<PARSERINFO ENCODE=\"[getOutputEncoding]\" WORDTYPE=\"SPCSEP\">"
+addLine "<BIBLE NAME=\"[string toupper $bible(version)]\" INFO=\"[getBibleTitle]\">"
+set currentBook ""
+set currentChapter ""
+set passageTitle ""
+forVerses {
+   set nextBook $bookKey
+   set nextChapter $chapterNumber
+   set newBook [expr {![string equal $nextBook $currentBook]}]
+   set newChapter [expr {$newBook || ($nextChapter != $currentChapter)}]
+   if {$newChapter} {
+      if {[string length $currentBook] > 0} {
+         endChapter
+         if {$newBook} {
+            endBook
+         }
+      }
+      set currentChapter $nextChapter
+      if {$newBook} {
+         set currentBook $nextBook
+         beginBook $bookKey
+      }
+      beginChapter
+   }
+   regsub -all {[][{}]} $verseText {} verseText
+   if {$verseNumber == 0} {
+      set passageTitle $verseText
+   } else {
+      set verseHeader ""
+      if {$verseNumber == 1} {
+         if {$chapterNumber == 1} {
+            append verseHeader "<BOOKTEXT>[getBookTitle $bookKey]"
+         }
+         append verseHeader "<CHAPTEXT>[getChapterTitle_[getBookType $bookKey] $chapterNumber]"
+      }
+      if {[regexp {^\[([A-Z]+)] *(.*)$} $verseText x title verseText]} {
+         set passageTitle $title
+      }
+      if {[string length $passageTitle] > 0} {
+         append verseHeader "<DESCTEXT>$passageTitle"
+         set passageTitle ""
+      }
+      if {[string length $verseHeader] > 0} {
+         append verseHeader "<VERSTEXT>"
+      }
+      addLine "<VERSE>$verseHeader$verseText</VERSE>"
+   }
+}
+if {[string length $currentBook] > 0} {
+   endChapter
+   endBook
+}
+addLine "</BIBLE>"
+set stream [open "$bible(version).txt" {WRONLY TRUNC CREAT}]
+writeLines $stream $lines
+close $stream; unset stream
+exit 0

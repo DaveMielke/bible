@@ -1,0 +1,15 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+
+file mkdir [set directory [getGlimpseDirectory]]
+if {[catch [list exec <@ stdin glimpseindex -o -B -H $directory [getVersesFile] >@ stdout 2>@ stderr] response] != 0} {
+   putProgramError "$response"
+}
+
+set userMask "0[umask]"
+set filePermissions [format "0%3.3o" [expr {~$userMask & 0666}]]
+foreach fileName [glob -directory $directory ".glimpse_*"] {
+   file attributes $fileName -permissions $filePermissions
+}
+
+exit 0

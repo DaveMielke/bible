@@ -1,0 +1,282 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+proc addMenu {name value internalList externalList} {
+   addLine "<SELECT NAME=$name>"
+   foreach internal $internalList external $externalList {
+      if {[cequal $internal $value]} {
+         set selected " SELECTED"
+      } else {
+         set selected ""
+      }
+      addLine "<OPTION VALUE=\"$internal\"$selected>$external"
+   }
+   addLine "</SELECT>"
+}
+proc testInteger {value {minimum ""} {maximum ""}} {
+   if {![string is digit $value]} {
+      return 0
+   }
+   if {([clength $value] > 1) && [cequal [cindex $value 0] 0]} {
+      return 0
+   }
+   if {[clength $minimum] > 0} {
+      if {$value < $minimum} {
+         return 0
+      }
+   }
+   if {[clength $maximum] > 0} {
+      if {$value > $maximum} {
+         return 0
+      }
+   }
+   return 1
+}
+proc testErrors {value} {
+   return [testInteger $value 0 8]
+}
+proc escapeString {string} {
+   regsub -all {([-;,#<>^$(|).[*!\\])} $string {\\\1} string
+   return $string
+}
+proc joinWords {operator} {
+   global wordList
+   set string ""
+   set first 1
+   foreach word $wordList {
+      if {$first} {
+         set first 0
+      } else {
+         append string $operator
+      }
+      append string [escapeString $word]
+   }
+   return $string
+}
+proc cgiImport {parameter {default ""}} {
+   upvar 1 $parameter $parameter
+   if {[catch [list cgi_import $parameter] response] == 0} {
+      set $parameter [string trim [set $parameter]]
+      return 1
+   }
+   set $parameter $default
+   return 0
+}
+proc findVerses {code} {
+   global selectionMode caseSensitive spellingErrors
+   bindVerseVariables
+   set command [list < /dev/null glimpse -y -h -H [getGlimpseDirectory]]
+   if {!$caseSensitive} {
+      lappend command -i
+   }
+   lappend command -w
+   lappend command -$spellingErrors
+   lappend command -e
+   switch -exact -- $selectionMode {
+      all {
+         lappend command [joinWords \;]
+      }
+      any {
+         lappend command [joinWords ,]
+      }
+      phrase {
+         lappend command [joinWords " "]
+      }
+   }
+   if {[catch [list openInputStream "|$command"] stream] == 0} {
+      uplevel 1 [list scanVerses $stream $code]
+      catch [list close $stream]; unset stream
+   } else {
+      putProgramMessage "$stream"
+   }
+}
+loadBookDefinitions
+setResultsSubstitutions substitutions
+set resultStyle verses
+set selectionMode all
+set caseSensitive 0
+set spellingErrors 0
+if {[lempty $argv]} {
+   source [file join [getLibraryDirectory] "cgi.tcl"]
+   startBasicDocument search.cgi [getResultsTitle]
+   cgi_eval {
+      cgi_content_type "text/html"
+      cgi_input
+      if {![cgiImport data ""]} {
+	 lappend problems $substitutions(input.empty)
+      } else {
+	 set wordList [split $data]
+      }
+      cgiImport style verses
+      set styleList {verses refs}
+      if {[set styleIndex [lsearch -exact $styleList $style]] < 0} {
+	 lappend problems $substitutions(style.problem)
+      } else {
+	 set resultStyle [lindex $styleList $styleIndex]
+      }
+      cgiImport mode all
+      set modeList {all any phrase}
+      if {[set modeIndex [lsearch -exact $modeList $mode]] < 0} {
+	 lappend problems $substitutions(mode.problem)
+      } else {
+	 set selectionMode [lindex $modeList $modeIndex]
+      }
+      cgiImport case ignore
+      set caseList {ignore respect}
+      if {[set caseIndex [lsearch -exact $caseList $case]] < 0} {
+	 lappend problems $substitutions(case.problem)
+      } else {
+	 set caseSensitive $caseIndex
+      }
+      cgiImport errors 0
+      if {![testErrors $errors]} {
+	 lappend problems $substitutions(errors.problem)
+      } else {
+	 set spellingErrors $errors
+      }
+      if {[info exists problems]} {
+	 addLine $substitutions(statement.problem)
+	 addLine "<UL>"
+	 foreach problem $problems {
+	    addLine "<LI>$problem"
+	 }
+	 addLine "</UL>"
+      } else {
+	 addLine "<FORM METHOD=GET ACTION=\"search.cgi\">"
+	 addLine "<CENTER>"
+	 addLine "<INPUT NAME=data TYPE=TEXT VALUE=\"$data\" SIZE=40>"
+	 addLine "<INPUT TYPE=SUBMIT VALUE=\"$substitutions(label.search)\">"
+	 addLine "<BR>"
+	 addMenu style $style $styleList [list $substitutions(style.verses) $substitutions(style.refs)]
+	 addMenu mode $mode $modeList [list $substitutions(mode.all) $substitutions(mode.any) $substitutions(mode.phrase)]
+	 addMenu case $case $caseList [list $substitutions(case.ignore) $substitutions(case.respect)]
+         loop i 0 9 {
+            lappend internalErrorsList $i
+            lappend externalErrorsList [getResults_errorsLimit $i]
+         }
+	 addMenu errors $errors $internalErrorsList $externalErrorsList
+	 addLine "</CENTER>"
+	 addLine "</FORM>"
+	 set countMark [markDocument]
+	 set verseCount 0
+         switch -exact $resultStyle {
+            verses {
+               findVerses {
+                  if {[incr verseCount] == 1} {
+                     addLine "<DL>"
+                  }
+                  htmlizeVerseText verseText
+                  set url [getBookIdentifier $bookKey]
+                  set link "[getBookName $bookKey] "
+                  if {[getChapterCount $bookKey] > 0} {
+                     append url "/[getChapterName $chapterNumber]"
+                     append link "$chapterNumber:"
+                  }
+                  append url ".html#$verseNumber"
+                  append link $verseNumber
+                  addLine "<DT><A HREF=\"$url\">$link</A><DD>$verseText"
+               }
+               if {$verseCount > 0} {
+                  addLine "</DL>"
+               }
+            }
+            refs {
+               set currentBook ""
+               findVerses {
+                  if {[incr verseCount] == 1} {
+                     addLine "<DL>"
+                  }
+                  if {![cequal $bookKey $currentBook]} {
+                     if {[clength $currentBook] > 0} {
+                        addLine $refs
+                     }
+                     set currentBook $bookKey
+                     set currentChapter ""
+                     addLine "<DT>[getBookName $bookKey]<DD>"
+                     set refs ""
+                     set urlPrefix [getBookIdentifier $bookKey]
+                  }
+                  set url $urlPrefix
+                  set refPrefix ""
+                  set sameChapter 0
+                  if {[getChapterCount $bookKey] > 0} {
+                     append url "/[getChapterName $chapterNumber]"
+                     if {[cequal $chapterNumber $currentChapter]} {
+                        set sameChapter 1
+                     } else {
+                        set currentChapter $chapterNumber
+                        set refPrefix "$chapterNumber:"
+                     }
+                  }
+                  append url ".html#$verseNumber"
+                  if {$sameChapter} {
+                     append refs ","
+                  } elseif {[clength $refs] > 0} {
+                     append refs " "
+                  }
+                  append refs "$refPrefix<A HREF=\"$url\">$verseNumber</A>"
+               }
+               if {$verseCount > 0} {
+                  addLine $refs
+                  addLine "</DL>"
+               }
+            }
+         }
+         if {$verseCount > 0} {
+            addLine $substitutions(statement.end)
+         }
+         insertLine $countMark "<H3>[getResults_versesFound $verseCount]</H3>"
+         addSearchHelpParagraph
+      }
+   }
+   endDocument
+} else {
+   set outputHeader 1
+   parseProgramArguments operands {word args} {
+      verses {} {
+         set resultStyle verses
+      }
+      refs {} {
+         set resultStyle refs
+      }
+      all {} {
+         set selectionMode all
+      }
+      any {} {
+         set selectionMode any
+      }
+      phrase {} {
+         set selectionMode phrase
+      }
+      case {} {
+         set caseSensitive 1
+      }
+      nocase {} {
+         set caseSensitive 0
+      }
+      errors {spelling_error_count} {
+	 if {![testErrors [set spellingErrors $operands(spelling_error_count)]]} {
+	    break
+	 }
+      }
+      header {} {
+	 set outputHeader 1
+      }
+      noheader {} {
+	 set outputHeader 0
+      }
+   }
+   set wordList [list $operands(word)]
+   lvarcat wordList $operands(args)
+   unset operands
+   set verseTable [list]
+   findVerses {
+      lappend verseTable [list [getBookName $bookKey] "$chapterNumber:$verseNumber" $verseText]
+   }
+   if {[lempty $verseTable]} {
+      putProgramError "verse not found."
+   }
+   if {$outputHeader} {
+      lvarpush verseTable [list Book Verse Text]
+   }
+   puts -nonewline stdout [formatTable $verseTable 1 {{right} {left} {left}}]
+}

@@ -1,0 +1,106 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+set indexLimit 50
+proc writeIndex {} {
+   global indexLines chapterCount
+   if {[info exists indexLines]} {
+      if {$chapterCount > 0} {
+	 global currentBook bookIdentifier bookName bookTitle bookType
+	 set subtitle [getIndexTitle_$bookType]
+	 startDocument 1 [list $bookIdentifier] "$bookName - $subtitle" $bookTitle $subtitle
+	 addLine "<TABLE CELLSPACING=5>"
+	 set chapterNumber 0
+	 foreach verse1 $indexLines {
+	    addLine "<TR>"
+	    addLine "<TD ALIGN=RIGHT VALIGN=TOP>"
+	    addLink "<FONT SIZE=+3>[incr chapterNumber]</FONT>" [getChapterUrl $currentBook $chapterNumber]
+	    addLine "</TD>"
+	    addLine "<TD ALIGN=LEFT VALIGN=TOP>$verse1</TD>"
+	    addLine "</TR>"
+	    addLine "<TR>"
+	    addLine "<TD></TD>"
+	    addLine "<TD>.&nbsp\;.&nbsp\;.</TD>"
+	    addLine "</TR>"
+	 }
+	 addLine "</TABLE>"
+	 endDocument
+      }
+   }
+}
+proc writeChapter {} {
+   global indexLines indexWords
+   if {[documentStarted]} {
+      endDocument
+      if {![cequal [cindex [set word [lindex $indexWords end]] end] .]} {
+         lappend indexWords "[lvarpop indexWords end]&nbsp\;.&nbsp\;.&nbsp\;."
+      }
+      lappend indexLines [join $indexWords " "]
+   }
+}
+loadBookDefinitions
+set currentBook ""
+set currentChapter ""
+forVerses {
+   htmlizeVerseText verseText
+   set nextBook $bookKey
+   set nextChapter $chapterNumber
+   if {!(($nextBook == $currentBook) && ($nextChapter == $currentChapter))} {
+      writeChapter
+      if {$nextBook != $currentBook} {
+	 writeIndex
+	 set currentBook $nextBook
+	 set indexLines {}
+	 set bookIdentifier [getBookIdentifier $bookKey]
+	 set bookName [getBookName $bookKey]
+	 set bookParagraphs [getBookParagraphs $bookKey]
+	 set chapterCount [getChapterCount $bookKey]
+	 set bookTitle [string map {"_" " "} [getBookTitle $bookKey]]
+	 set bookType [getBookType $bookKey]
+         set isPsalm [string equal $bookType psalm]
+      }
+      set currentChapter $nextChapter
+      set indexWords {}
+      set chapterParagraphs [lvarpop bookParagraphs]
+      set documentTitle $bookName
+      set documentPath [list $bookIdentifier]
+      if {$chapterCount > 0} {
+	 lappend documentPath [getChapterName $chapterNumber]
+	 if {$isPsalm} {
+	    set documentTitle ""
+	 } else {
+	    append documentTitle " - "
+	 }
+         append documentTitle [set chapterTitle [getChapterTitle_$bookType $chapterNumber]]
+      } else {
+         set chapterTitle ""
+      }
+      startDocument 2 $documentPath $documentTitle $bookTitle $chapterTitle
+   }
+   set verseWords [expr {[regsub -all { +} [set verseText [string trim $verseText]] { } verseText] + 1}]
+   if {$verseNumber == 0} {
+      set verseText "<CENTER><I>$verseText</I></CENTER>"
+   } else {
+      if {[set words [expr {min($verseWords,$indexLimit-[llength $indexWords])}]] > 0} {
+         lvarcat indexWords [lrange [split $verseText " "] 0 [expr {$words - 1}]]
+      }
+      if {![lempty $chapterParagraphs]} {
+         if {$verseNumber == [lindex $chapterParagraphs 0]} {
+	    lvarpop chapterParagraphs
+            if {$verseNumber != 1} {
+               addLine "<P>"
+            }
+	 }
+      }
+      if {$verseNumber > 1} {
+	 set verseText "&nbsp;&nbsp;$verseNumber $verseText"
+      }
+      append verseText "<BR>"
+   }
+   set verseText "<A NAME=$verseNumber>$verseText</A>"
+   if {[clength $passageTitle] > 0} {
+      addLine "<H3>$passageTitle</H3>"
+   }
+   addLine $verseText
+}
+writeChapter
+writeIndex

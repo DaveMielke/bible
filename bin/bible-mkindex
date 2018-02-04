@@ -1,0 +1,35 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+set columns 4
+proc makeTestamentIndex {testamentName firstBook lastBook} {
+   global lines columns
+   set keys [lrange [getBookKeys] $firstBook $lastBook]
+   set rows [expr {([llength $keys] + $columns - 1) / $columns}]
+   set width "[expr {100 / $columns}]%"
+   addLine "<H3>[getTestamentTitle_$testamentName]</H3>"
+   addLine "<TABLE WIDTH=100% CELLSPACING=0 CELLPADDING=0>"
+   addLine "<TR>"
+   loop column 0 $columns {
+      addLine "<TD VALIGN=TOP WIDTH=$width>"
+      addLine "<UL>"
+      loop row 0 $rows {
+         if {[clength [set key [lindex $keys [expr {($column * $rows) + $row}]]]] == 0} {
+	    break
+	 }
+	 addLine "<LI>"
+	 addLink [getBookName $key] [getBookUrl [getBookIndex $key]]
+      }
+      addLine "</UL>"
+      addLine "</TD>"
+   }
+   addLine "</TR>"
+   addLine "</TABLE>"
+}
+proc makeTestamentIndeces {} {
+   makeTestamentIndex old 0 38
+   makeTestamentIndex new 39 65
+}
+loadBookDefinitions
+startBasicDocument index [getIndexTitle_book]
+makeTestamentIndeces
+endDocument

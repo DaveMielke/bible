@@ -1,0 +1,40 @@
+<FORM METHOD=GET ACTION="search.cgi">
+@instruction.words@
+@instruction.spaces@
+@instruction.punctuation@
+<BR>
+<CENTER>
+<INPUT NAME=data TYPE=TEXT SIZE=40>
+<INPUT TYPE=SUBMIT VALUE="@label.search@">
+</CENTER>
+<P>
+@instruction.default@
+<UL>
+<LI>
+@mode.statement@
+<SELECT NAME=mode>
+<OPTION VALUE=all SELECTED>@mode.all@
+<OPTION VALUE=any>@mode.any@
+<OPTION VALUE=phrase>@mode.phrase@
+</SELECT>
+<LI>
+@case.statement@
+<SELECT NAME=case>
+<OPTION VALUE=ignore SELECTED>@case.ignore@
+<OPTION VALUE=respect>@case.respect@
+</SELECT>
+<LI>
+@errors.statement@
+<SELECT NAME=errors>
+<OPTION VALUE=0 SELECTED>@errors.0@
+<OPTION VALUE=1>@errors.1@
+<OPTION VALUE=2>@errors.2@
+<OPTION VALUE=3>@errors.3@
+<OPTION VALUE=4>@errors.4@
+<OPTION VALUE=5>@errors.5@
+<OPTION VALUE=6>@errors.6@
+<OPTION VALUE=7>@errors.7@
+<OPTION VALUE=8>@errors.8@
+</SELECT>
+</UL>
+</FORM>

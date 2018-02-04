@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+directory="`dirname "${0}"`"
+directory="`cd "${directory}" && pwd`"
+for action in vars files index books search glimpse
+do
+   "${directory}/bible-mk${action}"
+done
+exit 0

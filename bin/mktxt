@@ -1,0 +1,92 @@
+#!/usr/bin/env tclsh
+
+source [file join [file dirname $argv0] .. lib bible.tcl]
+loadBookDefinitions
+
+proc putLine {line} {
+   global bookStream
+   puts $bookStream $line
+}
+
+proc beginBook {} {
+   global bookNumber bookKey bookType bookStream
+   set bookFile [format "%02u-%s.txt" $bookNumber [getBookIdentifier $bookKey]] 
+   file mkdir [set bibleDirectory [getBibleDirectory]]
+   set bookStream [open [file join $bibleDirectory $bookFile] {WRONLY TRUNC CREAT}]
+   setOutputEncoding $bookStream
+   fconfigure $bookStream -translation crlf
+}
+
+proc endBook {} {
+   global bookStream
+   close $bookStream; unset bookStream
+}
+
+proc beginChapter {} {
+   global bookKey bookType chapterNumber
+
+   set hasChapters [expr {($chapterNumber > 1) || ([getChapterCount $bookKey] > 1)}]
+
+   set chapterTitle [getBookPhrase $bookKey]
+   if {$hasChapters} {
+      if {[string equal $bookType psalm]} {
+         set chapterTitle ""
+      } else {
+         append chapterTitle " - "
+      }
+
+      append chapterTitle [getChapterTitle_$bookType $chapterNumber]
+   }
+
+   putLine $chapterTitle
+}
+
+proc endChapter {} {
+   putLine ""
+}
+
+set bookNumber 0
+set currentBook ""
+set currentChapter ""
+
+forVerses {
+   set nextBook $bookKey
+   set newBook [expr {![string equal $nextBook $currentBook]}]
+
+   set nextChapter $chapterNumber
+   set newChapter [expr {$newBook || ($nextChapter != $currentChapter)}]
+
+   if {$newChapter} {
+      if {[string length $currentBook] > 0} {
+         endChapter
+
+         if {$newBook} {
+            endBook
+         }
+      }
+
+      set currentChapter $nextChapter
+      set currentBook $nextBook
+
+      if {$newBook} {
+         incr bookNumber
+         set bookType [getBookType $bookKey]
+         beginBook
+      }
+
+      beginChapter
+   }
+
+   set verseTitle ""
+   if {$verseNumber > 0} {
+      append verseTitle "\[$verseNumber\]: "
+   }
+   putLine "$verseTitle$verseText"
+}
+
+if {[string length $currentBook] > 0} {
+   endChapter
+   endBook
+}
+
+exit 0
