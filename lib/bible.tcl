@@ -1,4 +1,4 @@
-package require Tclx
+lappend auto_path /mnt/opt/dave/lib/tcl
 
 proc setOutputEncoding {stream} {
    fconfigure $stream -encoding [string map {"iso-" "iso"} [getOutputEncoding]]
@@ -442,7 +442,7 @@ proc loadHooks {directory} {
 
 proc prepareEnvironment {} {
    global argv0 env bible
-   umask 022
+#  umask 022
    set bible(root) [file dirname [file dirname [file normalize $argv0]]]
    if {[info exists env(BIBLE_VERSION)]} {
       set bible(version) $env(BIBLE_VERSION)
