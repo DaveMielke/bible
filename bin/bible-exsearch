@@ -1,16 +1,16 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
 proc addMenu {name value internalList externalList} {
-   addLine "<SELECT NAME=$name>"
+   addLine "<select name=\"$name\">"
    foreach internal $internalList external $externalList {
       if {[cequal $internal $value]} {
          set selected " SELECTED"
       } else {
          set selected ""
       }
-      addLine "<OPTION VALUE=\"$internal\"$selected>$external"
+      addLine "<option value=\"$internal\"$selected>$external"
    }
-   addLine "</SELECT>"
+   addLine "</select>"
 }
 proc testInteger {value {minimum ""} {maximum ""}} {
    if {![string is digit $value]} {
@@ -135,17 +135,16 @@ if {[lempty $argv]} {
       }
       if {[info exists problems]} {
 	 addLine $substitutions(statement.problem)
-	 addLine "<UL>"
+	 addLine "<ul>"
 	 foreach problem $problems {
-	    addLine "<LI>$problem"
+	    addLine "<li>$problem"
 	 }
-	 addLine "</UL>"
+	 addLine "</ul>"
       } else {
-	 addLine "<FORM METHOD=GET ACTION=\"search.cgi\">"
-	 addLine "<CENTER>"
-	 addLine "<INPUT NAME=data TYPE=TEXT VALUE=\"$data\" SIZE=40>"
-	 addLine "<INPUT TYPE=SUBMIT VALUE=\"$substitutions(label.search)\">"
-	 addLine "<BR>"
+	 addLine "<form method=\"get\" action=\"search.cgi\">"
+	 addLine "<input name=\"data\" type=\"text\" value=\"$data\" size=\"40\">"
+	 addLine "<input type=\"submit\" value=\"$substitutions(label.search)\">"
+	 addLine "<br>"
 	 addMenu style $style $styleList [list $substitutions(style.verses) $substitutions(style.refs)]
 	 addMenu mode $mode $modeList [list $substitutions(mode.all) $substitutions(mode.any) $substitutions(mode.phrase)]
 	 addMenu case $case $caseList [list $substitutions(case.ignore) $substitutions(case.respect)]
@@ -154,15 +153,14 @@ if {[lempty $argv]} {
             lappend externalErrorsList [getResults_errorsLimit $i]
          }
 	 addMenu errors $errors $internalErrorsList $externalErrorsList
-	 addLine "</CENTER>"
-	 addLine "</FORM>"
+	 addLine "</form>"
 	 set countMark [markDocument]
 	 set verseCount 0
          switch -exact $resultStyle {
             verses {
                findVerses {
                   if {[incr verseCount] == 1} {
-                     addLine "<DL>"
+                     addLine "<dl>"
                   }
                   htmlizeVerseText verseText
                   set url [getBookIdentifier $bookKey]
@@ -173,17 +171,17 @@ if {[lempty $argv]} {
                   }
                   append url ".html#$verseNumber"
                   append link $verseNumber
-                  addLine "<DT><A HREF=\"$url\">$link</A><DD>$verseText"
+                  addLine "<dt><a href=\"$url\">$link</a><dd>$verseText"
                }
                if {$verseCount > 0} {
-                  addLine "</DL>"
+                  addLine "</dl>"
                }
             }
             refs {
                set currentBook ""
                findVerses {
                   if {[incr verseCount] == 1} {
-                     addLine "<DL>"
+                     addLine "<dl>"
                   }
                   if {![cequal $bookKey $currentBook]} {
                      if {[clength $currentBook] > 0} {
@@ -191,7 +189,7 @@ if {[lempty $argv]} {
                      }
                      set currentBook $bookKey
                      set currentChapter ""
-                     addLine "<DT>[getBookName $bookKey]<DD>"
+                     addLine "<dt>[getBookName $bookKey]<dd>"
                      set refs ""
                      set urlPrefix [getBookIdentifier $bookKey]
                   }
@@ -213,18 +211,18 @@ if {[lempty $argv]} {
                   } elseif {[clength $refs] > 0} {
                      append refs " "
                   }
-                  append refs "$refPrefix<A HREF=\"$url\">$verseNumber</A>"
+                  append refs "$refPrefix<a href=\"$url\">$verseNumber</a>"
                }
                if {$verseCount > 0} {
                   addLine $refs
-                  addLine "</DL>"
+                  addLine "</dl>"
                }
             }
          }
          if {$verseCount > 0} {
             addLine $substitutions(statement.end)
          }
-         insertLine $countMark "<H3>[getResults_versesFound $verseCount]</H3>"
+         insertLine $countMark "<h3>[getResults_versesFound $verseCount]</h3>"
          addSearchHelpParagraph
       }
    }
@@ -280,3 +278,4 @@ if {[lempty $argv]} {
    }
    puts -nonewline stdout [formatTable $verseTable 1 {{right} {left} {left}}]
 }
+exit 0

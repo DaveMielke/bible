@@ -199,8 +199,8 @@ proc forVerses {code} {
 
 proc htmlizeVerseText {textVariable} {
    upvar 1 $textVariable text
-   regsub -all {\{} $text {<I>} text
-   regsub -all {\}} $text {</I>} text
+   regsub -all {\{} $text {<i>} text
+   regsub -all {\}} $text {</i>} text
 }
 
 proc getDocumentExtension {} {
@@ -280,10 +280,10 @@ proc addLines {lines} {
 
 proc addLink {text url {image ""}} {
    if {[clength $image] > 0} {
-      set text "<IMG SRC=\"[makeUrl [list $image]]\" ALT=\"$text\">"
+      set text "<img src=\"[makeUrl [list $image]]\" alt=\"$text\">"
    }
    if {[clength $url] > 0} {
-      set text "<A HREF=\"$url\">$text</A>"
+      set text "<a href=\"$url\">$text</a>"
    }
    addLine $text
 }
@@ -309,9 +309,9 @@ proc addSelectors {} {
 	 set nextChapter [getChapterUrl $currentBook [expr {$currentChapter + 1}]]
       }
    }
-   addLine "<TABLE WIDTH=100% CELLSPACING=0 CELLPADDING=0>"
-   addLine "<TR VALIGN=BOTTOM>"
-   addLine "<TD WIDTH=33% ALIGN=LEFT>"
+   addLine "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">"
+   addLine "<tr valign=\"bottom\">"
+   addLine "<td width=\"33%\" align=\"left\">"
    if {[clength $bookIndex] > 0} {
       addLink [getLabel_previousBook] $previousBook "LeftArrow.gif"
       addLink [getLabel_bookIndex] $bookIndex
@@ -319,15 +319,15 @@ proc addSelectors {} {
    } else {
       addLine "&nbsp\;"
    }
-   addLine "</TD>"
-   addLine "<TD WIDTH=34% ALIGN=CENTER>"
+   addLine "</td>"
+   addLine "<td width=\"34%\" align=\"center\">"
    if {[clength $searchForm] > 0} {
       addLink [getLabel_search] $searchForm
    } else {
       addLine "&nbsp\;"
    }
-   addLine "</TD>"
-   addLine "<TD WIDTH=33% ALIGN=RIGHT>"
+   addLine "</td>"
+   addLine "<td width=\"33%\" align=\"right\">"
    if {[clength $chapterIndex] > 0} {
       addLink [getLabel_previousChapter] $previousChapter "LeftArrow.gif"
       addLink [getLabel_chapterIndex] $chapterIndex
@@ -335,9 +335,9 @@ proc addSelectors {} {
    } else {
       addLine "&nbsp\;"
    }
-   addLine "</TD>"
-   addLine "</TR>"
-   addLine "</TABLE>"
+   addLine "</td>"
+   addLine "</tr>"
+   addLine "</table>"
 }
 
 proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
@@ -351,17 +351,18 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    set bible(document,directory) [eval file join [list [getHypertextDirectory]] $bible(document,folder)]
    set bible(document,file) [file join $bible(document,directory) $bible(document,name)]
    set bible(document,lines) [list]
-   addLine "<HTML>"
-   addLine "<HEAD>"
-   addLine "<TITLE>$title</TITLE>"
-   addLine "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=[getOutputEncoding]\">"
-   addLine "<META HTTP-EQUIV=\"Content-Language\" CONTENT=\"[getLanguageCode]\">"
-   addLine "</HEAD>"
-   addLine "<BODY>"
+   addLine "<!DOCTYPE html>"
+   addLine "<html lang=\"en\">"
+   addLine "<head>"
+   addLine "<meta charset=\"UTF-8\">"
+   addLine "<meta name=\"description\" content=\"Accessible [string toupper $bible(version)] Bible - $title\">"
+   addLine "<title>$title</title>"
+   addLine "</head>"
+   addLine "<body>"
    addSelectors
-   addLine "<H1>$primaryHeader</H1>"
+   addLine "<h1>$primaryHeader</h1>"
    if {[clength $secondaryHeader] > 0} {
-      addLine "<H2>$secondaryHeader</H2>"
+      addLine "<h2>$secondaryHeader</h2>"
    }
 }
 
@@ -389,10 +390,10 @@ proc writeDocument {stream} {
 
 proc endDocument {} {
    global bible
-   addLine "<HR>"
+   addLine "<hr>"
    addSelectors
-   addLine "</BODY>"
-   addLine "</HTML>"
+   addLine "</body>"
+   addLine "</html>"
    if {[cequal [file extension $bible(document,name)] .cgi]} {
       writeDocument stdout
    } else {
@@ -409,6 +410,13 @@ proc documentStarted {} {
    return [info exists bible(document,type)]
 }
 
+proc readFile {path} {
+   set stream [open $path {RDONLY}]
+   set result [read -nonewline $stream]
+   close $stream; unset stream
+   return $result
+}
+
 proc includeFile {path {substitutionsArray ""}} {
    set map [list]
    if {[string length $substitutionsArray] > 0} {
@@ -417,7 +425,7 @@ proc includeFile {path {substitutionsArray ""}} {
          lappend map "@$name@" $substitutions($name)
       }
    }
-   foreach line [split [read_file -nonewline $path] \n] {
+   foreach line [split [readFile $path] \n] {
       addLine [string map $map $line]
    }
 }
@@ -425,7 +433,7 @@ proc includeFile {path {substitutionsArray ""}} {
 proc addSearchHelpParagraph {} {
    global bible
    if {[string length [set substitutions(email) [getSearchEmailAddress]]] > 0} {
-      addLine "<P>"
+      addLine "<p>"
       includeFile [file join [getLanguageDirectory] search.help] substitutions
    }
 }

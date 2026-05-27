@@ -6,24 +6,24 @@ proc makeTestamentIndex {testamentName firstBook lastBook} {
    set keys [lrange [getBookKeys] $firstBook $lastBook]
    set rows [expr {([llength $keys] + $columns - 1) / $columns}]
    set width "[expr {100 / $columns}]%"
-   addLine "<H3>[getTestamentTitle_$testamentName]</H3>"
-   addLine "<TABLE WIDTH=100% CELLSPACING=0 CELLPADDING=0>"
-   addLine "<TR>"
+   addLine "<h3>[getTestamentTitle_$testamentName]</h3>"
+   addLine "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">"
+   addLine "<tr>"
    loop column 0 $columns {
-      addLine "<TD VALIGN=TOP WIDTH=$width>"
-      addLine "<UL>"
+      addLine "<td valign=\"top\" width=\"$width\">"
+      addLine "<ul>"
       loop row 0 $rows {
          if {[clength [set key [lindex $keys [expr {($column * $rows) + $row}]]]] == 0} {
 	    break
 	 }
-	 addLine "<LI>"
+	 addLine "<li>"
 	 addLink [getBookName $key] [getBookUrl [getBookIndex $key]]
       }
-      addLine "</UL>"
-      addLine "</TD>"
+      addLine "</ul>"
+      addLine "</td>"
    }
-   addLine "</TR>"
-   addLine "</TABLE>"
+   addLine "</tr>"
+   addLine "</table>"
 }
 proc makeTestamentIndeces {} {
    makeTestamentIndex old 0 38
@@ -33,3 +33,4 @@ loadBookDefinitions
 startBasicDocument index [getIndexTitle_book]
 makeTestamentIndeces
 endDocument
+exit 0

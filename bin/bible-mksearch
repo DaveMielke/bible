@@ -6,3 +6,4 @@ setSearchSubstitutions substitutions
 includeFile [file join [getLibraryDirectory] search.form] substitutions
 addSearchHelpParagraph
 endDocument
+exit 0

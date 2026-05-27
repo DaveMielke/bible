@@ -6,8 +6,7 @@ if {[catch [list exec <@ stdin glimpseindex -o -B -H $directory [getVersesFile] 
    putProgramError "$response"
 }
 
-set userMask "0[umask]"
-set filePermissions [format "0%3.3o" [expr {~$userMask & 0666}]]
+set filePermissions 0644
 foreach fileName [glob -directory $directory ".glimpse_*"] {
    file attributes $fileName -permissions $filePermissions
 }

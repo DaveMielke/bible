@@ -6,3 +6,4 @@ foreach name [glob -directory [set filesDirectory [getFilesDirectory]] -tails -n
    file delete -- $path
    file copy -- [file join $filesDirectory $name] $path
 }
+exit 0
