@@ -351,7 +351,7 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    addLine "<head>"
    addLine "<meta charset=\"[string toupper [getOutputEncoding]]\">"
    addLine "<meta name=\"description\" content=\"Accessible Bible - $bible(VERSION) ($bible(title)) - $title\">"
-   addLine "<title>$title</title>"
+   addLine "<title>[getGeneralTitle] - $bible(title) - $title</title>"
    addLine "</head>"
    addLine "<body>"
    addSelectors
@@ -364,10 +364,7 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
 proc startBasicDocument {name {subheader ""}} {
    global bible
    set header "[getGeneralTitle] - $bible(title)"
-   set title $header
-   if {[clength $subheader] > 0} {
-      append title " - $subheader"
-   }
+   set title $subheader
    startDocument 0 [list $name] $title $header $subheader
 }
 
