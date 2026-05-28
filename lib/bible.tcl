@@ -273,11 +273,6 @@ proc addLine {line} {
    lappend bible(document,lines) $line
 }
 
-proc addLines {lines} {
-   global bible
-   lvarcat bible(document,lines) $lines
-}
-
 proc addLink {text url {image ""}} {
    if {[clength $image] > 0} {
       set text "<img src=\"[makeUrl [list $image]]\" alt=\"$text\">"
@@ -367,6 +362,7 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
 }
 
 proc startBasicDocument {name {subheader ""}} {
+   global bible
    set header "[getGeneralTitle] - $bible(title)"
    set title $header
    if {[clength $subheader] > 0} {

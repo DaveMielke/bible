@@ -17,10 +17,6 @@ proc writeIndex {} {
 	    addLine "</td>"
 	    addLine "<td align=\"left\" valign=\"top\">$verse1</td>"
 	    addLine "</tr>"
-	    addLine "<tr>"
-	    addLine "<td></td>"
-	    addLine "<td>.&nbsp\;.&nbsp\;.</td>"
-	    addLine "</tr>"
 	 }
 	 addLine "</table>"
 	 endDocument
@@ -31,8 +27,8 @@ proc writeChapter {} {
    global indexLines indexWords
    if {[documentStarted]} {
       endDocument
-      if {![cequal [cindex [set word [lindex $indexWords end]] end] .]} {
-         lappend indexWords "[lvarpop indexWords end]&nbsp\;.&nbsp\;.&nbsp\;."
+      if {![cequal [cindex [lindex $indexWords end] end] .]} {
+         lappend indexWords "[lvarpop indexWords end] ..."
       }
       lappend indexLines [join $indexWords " "]
    }
@@ -41,7 +37,6 @@ loadBookDefinitions
 set currentBook ""
 set currentChapter ""
 forVerses {
-   htmlizeVerseText verseText
    set nextBook $bookKey
    set nextChapter $chapterNumber
    if {!(($nextBook == $currentBook) && ($nextChapter == $currentChapter))} {
@@ -76,12 +71,14 @@ forVerses {
       }
       startDocument 2 $documentPath $documentTitle $bookTitle $chapterTitle
    }
-   set verseWords [expr {[regsub -all { +} [set verseText [string trim $verseText]] { } verseText] + 1}]
+   regsub { +} [set verseText [string trim $verseText]] { } verseText
+   htmlizeVerseText verseText
+   set verseWordCount [llength [set verseWords [split $verseText " "]]]
    if {$verseNumber == 0} {
       set verseText "<em>$verseText</em>"
    } else {
-      if {[set words [expr {min($verseWords,$indexLimit-[llength $indexWords])}]] > 0} {
-         lvarcat indexWords [lrange [split $verseText " "] 0 [expr {$words - 1}]]
+      if {[set wordCount [expr {min($verseWordCount,$indexLimit-[llength $indexWords])}]] > 0} {
+         lvarcat indexWords [lrange $verseWords 0 [expr {$wordCount - 1}]]
       }
       if {![lempty $chapterParagraphs]} {
          if {$verseNumber == [lindex $chapterParagraphs 0]} {
@@ -93,8 +90,8 @@ forVerses {
       }
       set verseText "<strong>$verseNumber</strong> $verseText"
    }
-   append verseText "<br>"
    set verseText "<span id=\"$verseNumber\">$verseText</span>"
+   append verseText "<br>"
    if {[clength $passageTitle] > 0} {
       addLine "<h3>$passageTitle</h3>"
    }
