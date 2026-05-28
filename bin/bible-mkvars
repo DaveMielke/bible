@@ -3,11 +3,14 @@ source [file join [file dirname $argv0] .. lib bible.tcl]
 set variables [list]
 lappend variables [list BIBLE_ROOT $bible(root)]
 lappend variables [list BIBLE_VERSION $bible(version)]
-file mkdir [file dirname [set file [getVariablesFile]]]
-set stream [open $file {WRONLY TRUNC CREAT}]
+set oldFile [getVariablesFile]
+set newFile "$oldFile.new"
+file mkdir [file dirname $oldFile]
+set stream [open $newFile {WRONLY TRUNC CREAT}]
 foreach variable $variables {
    lassign $variable name value
    puts $stream "$name=$value"
 }
 close $stream; unset stream
+replaceFile $newFile $oldFile
 exit 0

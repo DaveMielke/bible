@@ -394,11 +394,7 @@ proc endDocument {{stream ""}} {
       set stream [open $bible(document,file,new) {WRONLY TRUNC CREAT}]
       writeDocument $stream
       close $stream; unset stream
-      if {[compareFiles $bible(document,file,new) $bible(document,file,old)]} {
-         file delete $bible(document,file,new)
-      } else {
-         file rename -force $bible(document,file,new) $bible(document,file,old)
-      }
+      replaceFile $bible(document,file,new) $bible(document,file,old)
    }
    unset bible(document,type)
 }
@@ -408,15 +404,26 @@ proc documentStarted {} {
    return [info exists bible(document,type)]
 }
 
-proc readFile {path} {
+proc readFile {path {binary 0}} {
    set stream [open $path {RDONLY}]
+   if {$binary} {
+      fconfigure $stream -translation binary
+   }
    set result [read -nonewline $stream]
    close $stream; unset stream
    return $result
 }
 
 proc compareFiles {file1 file2} {
-   return [string equal [readFile $file1] [readFile $file2]]
+   return [string equal [readFile $file1 1] [readFile $file2 1]]
+}
+
+proc replaceFile {newFile oldFile} {
+   if {[compareFiles $newFile $oldFile]} {
+      file delete $newFile
+   } else {
+      file rename -force $newFile $oldFile
+   }
 }
 
 proc includeFile {path {substitutionsArray ""}} {
