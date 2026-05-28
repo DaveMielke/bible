@@ -7,6 +7,6 @@ proc getLanguageCode {} {
 }
 
 proc getSearchEmailAddress {} {
-   return "dave@mielke.cc"
+   return "Dave@Mielke.cc"
 }
 

@@ -56,7 +56,7 @@ proc getLanguagesDirectory {} {
 
 proc getLanguageDirectory {} {
    global bible
-   return [file join [getLanguagesDirectory] [getLanguageCode]]
+   return [file join [getLanguagesDirectory] $bible(language)]
 }
 
 proc getBooksFile {} {
@@ -352,10 +352,10 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    set bible(document,file) [file join $bible(document,directory) $bible(document,name)]
    set bible(document,lines) [list]
    addLine "<!DOCTYPE html>"
-   addLine "<html lang=\"en\">"
+   addLine "<html lang=\"$bible(language)\">"
    addLine "<head>"
-   addLine "<meta charset=\"UTF-8\">"
-   addLine "<meta name=\"description\" content=\"Accessible [string toupper $bible(version)] Bible - $title\">"
+   addLine "<meta charset=\"[string toupper [getOutputEncoding]]\">"
+   addLine "<meta name=\"description\" content=\"Accessible Bible - $bible(VERSION) ($bible(title)) - $title\">"
    addLine "<title>$title</title>"
    addLine "</head>"
    addLine "<body>"
@@ -367,7 +367,7 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
 }
 
 proc startBasicDocument {name {subheader ""}} {
-   set header "[getGeneralTitle] - [getBibleTitle]"
+   set header "[getGeneralTitle] - $bible(title)"
    set title $header
    if {[clength $subheader] > 0} {
       append title " - $subheader"
@@ -449,19 +449,22 @@ proc loadHooks {directory} {
 }
 
 proc prepareEnvironment {} {
-   global argv0 env bible
-#  umask 022
+   global bible argv0 env
    set bible(root) [file dirname [file dirname [file normalize $argv0]]]
    if {[info exists env(BIBLE_VERSION)]} {
-      set bible(version) $env(BIBLE_VERSION)
+      set version $env(BIBLE_VERSION)
    } else {
-      set bible(version) "kjv"
+      set version "kjv"
    }
+   set bible(version) [string tolower $version]
+   set bible(VERSION) [string toupper $version]
    if {![loadHooks [getVersionDirectory]]} {
       putProgramError "unknown Bible version: $bible(version)"
    }
+   set bible(title) [getBibleTitle]
+   set bible(language) [getLanguageCode]
    if {![loadHooks [getLanguageDirectory]]} {
-      putProgramError "unknown language code: [getLanguageCode]"
+      putProgramError "unknown language code: $bible(language)"
    }
 }
 prepareEnvironment

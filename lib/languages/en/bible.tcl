@@ -1,5 +1,5 @@
 proc getOutputEncoding {} {
-   return "iso-8859-1"
+   return "utf-8"
 }
 
 proc getGeneralTitle {} {
