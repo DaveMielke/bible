@@ -15,7 +15,9 @@ proc writeIndex {} {
 	    addLine "<td align=\"right\" valign=\"top\">"
 	    addLink "<font size=\"+3\">[incr chapterNumber]</font>" [getChapterUrl $currentBook $chapterNumber]
 	    addLine "</td>"
-	    addLine "<td align=\"left\" valign=\"top\">$verse1</td>"
+	    addLine "<td align=\"left\" valign=\"top\">"
+	    addLine [regsub -all {<.*?>} $verse1 {}]
+	    addLine "</td>"
 	    addLine "</tr>"
 	 }
 	 addLine "</table>"
