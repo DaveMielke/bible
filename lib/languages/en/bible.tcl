@@ -61,15 +61,15 @@ proc getLabel_search {} {
 }
 
 proc getSearchTitle {} {
-   return "Find a Verse"
+   return "Find Verses"
 }
 proc setSearchSubstitutions {substitutionsArray} {
    upvar 1 $substitutionsArray substitutions
 
-   set substitutions(instruction.words) "Enter the words which you are looking for into the field below."
+   set substitutions(instruction.words) "Enter the words which you're looking for into the field below."
    set substitutions(instruction.spaces) "Separate them from one another by spaces."
    set substitutions(instruction.punctuation) "Punctuation will be ignored."
-   set substitutions(instruction.default) "If you have not changed any of the following options, verses which contain all of the specified words will be found."
+   set substitutions(instruction.default) "If you haven't changed any of the following options, verses which contain all of the specified words will be found."
 
    set substitutions(case.statement) "Ignore the difference between capital and small letters:"
    set substitutions(case.ignore) "yes"

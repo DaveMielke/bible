@@ -344,7 +344,8 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    }
    set bible(document,folder) $path
    set bible(document,directory) [eval file join [list [getHypertextDirectory]] $bible(document,folder)]
-   set bible(document,file) [file join $bible(document,directory) $bible(document,name)]
+   set bible(document,file,old) [file join $bible(document,directory) $bible(document,name)]
+   set bible(document,file,new) "$bible(document,file,old).new"
    set bible(document,lines) [list]
    addLine "<!DOCTYPE html>"
    addLine "<html lang=\"$bible(language)\">"
@@ -391,9 +392,14 @@ proc endDocument {} {
       writeDocument stdout
    } else {
       file mkdir $bible(document,directory)
-      set stream [open $bible(document,file) {WRONLY TRUNC CREAT}]
+      set stream [open $bible(document,file,new) {WRONLY TRUNC CREAT}]
       writeDocument $stream
       close $stream; unset stream
+      if {[compareFiles $bible(document,file,new) $bible(document,file,old)]} {
+         file delete $bible(document,file,new)
+      } else {
+         file rename -force $bible(document,file,new) $bible(document,file,old)
+      }
    }
    unset bible(document,type)
 }
@@ -408,6 +414,10 @@ proc readFile {path} {
    set result [read -nonewline $stream]
    close $stream; unset stream
    return $result
+}
+
+proc compareFiles {file1 file2} {
+   return [string equal [readFile $file1] [readFile $file2]]
 }
 
 proc includeFile {path {substitutionsArray ""}} {
