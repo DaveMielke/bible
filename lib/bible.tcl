@@ -362,11 +362,10 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    }
 }
 
-proc startBasicDocument {name {subheader ""}} {
+proc startBasicDocument {name subheader} {
    global bible
    set header "[getGeneralTitle] - $bible(title)"
-   set title $subheader
-   startDocument 0 [list $name] $title $header $subheader
+   startDocument 0 [list $name] $subheader $header $subheader
 }
 
 proc writeLines {stream lines} {
@@ -382,14 +381,14 @@ proc writeDocument {stream} {
    writeLines $stream $bible(document,lines)
 }
 
-proc endDocument {} {
+proc endDocument {{stream ""}} {
    global bible
    addLine "<hr>"
    addSelectors
    addLine "</body>"
    addLine "</html>"
-   if {[cequal [file extension $bible(document,name)] .cgi]} {
-      writeDocument stdout
+   if {[string length $stream] > 0} {
+      writeDocument $stream
    } else {
       file mkdir $bible(document,directory)
       set stream [open $bible(document,file,new) {WRONLY TRUNC CREAT}]

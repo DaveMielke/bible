@@ -226,7 +226,7 @@ if {[lempty $argv]} {
          addSearchHelpParagraph
       }
    }
-   endDocument
+   endDocument stdout
 } else {
    set outputHeader 1
    parseProgramArguments operands {word args} {
