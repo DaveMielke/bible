@@ -144,15 +144,20 @@ if {[lempty $argv]} {
 	 addLine "<form method=\"get\" action=\"search.cgi\">"
 	 addLine "<input name=\"data\" type=\"text\" value=\"$data\" size=\"40\">"
 	 addLine "<input type=\"submit\" value=\"$substitutions(label.search)\">"
-	 addLine "<br>"
+	 addLine "<ul>"
+	 addLine "<li>"
 	 addMenu style $style $styleList [list $substitutions(style.verses) $substitutions(style.refs)]
+	 addLine "<li>"
 	 addMenu mode $mode $modeList [list $substitutions(mode.all) $substitutions(mode.any) $substitutions(mode.phrase)]
+	 addLine "<li>"
 	 addMenu case $case $caseList [list $substitutions(case.ignore) $substitutions(case.respect)]
+	 addLine "<li>"
          loop i 0 9 {
             lappend internalErrorsList $i
             lappend externalErrorsList [getResults_errorsLimit $i]
          }
 	 addMenu errors $errors $internalErrorsList $externalErrorsList
+	 addLine "</ul>"
 	 addLine "</form>"
 	 set countMark [markDocument]
 	 set verseCount 0
