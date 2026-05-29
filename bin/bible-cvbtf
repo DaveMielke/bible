@@ -1,3 +1,9 @@
-#!/bin/bash -p
-CLASSPATH=/opt/BibleConverter java BibleConverter "${@}"
+#!/bin/bash
+. brltty-prologue.sh
+
+javaObject="BibleConverter"
+optionalProgramParameters "arg" "arguments passed through to the ${javaObject} object"
+parseProgramArguments "${@}"
+
+CLASSPATH=/opt/BibleConverter java "${javaObject}" "${@}"
 exit "${?}"

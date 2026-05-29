@@ -1,9 +1,13 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
 
+set optionDefinitions {
+}
+
 set brlttyRoot "/home/dave/brltty/git/main"
 set contractionTable "en-us-g2"
 set brailleWidth 40
+processProgramArguments optionValues $optionDefinitions
 
 set textItalicSymbol "@"
 set brailleItalicSymbol "."

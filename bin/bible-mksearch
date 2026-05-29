@@ -1,5 +1,11 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
+
+set optionDefinitions {
+}
+
+processProgramArguments optionValues $optionDefinitions
+
 startBasicDocument search [getSearchTitle]
 set substitutions(label.search) [getLabel_search]
 setSearchSubstitutions substitutions

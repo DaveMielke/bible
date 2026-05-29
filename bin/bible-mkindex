@@ -1,6 +1,12 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
+
+set optionDefinitions {
+}
+
 set columns 4
+processProgramArguments optionValues $optionDefinitions
+
 proc makeTestamentIndex {testamentName firstBook lastBook} {
    global lines columns
    set keys [lrange [getBookKeys] $firstBook $lastBook]

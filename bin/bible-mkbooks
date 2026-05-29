@@ -1,6 +1,12 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
+
+set optionDefinitions {
+}
+
 set indexLimit 50
+processProgramArguments optionValues $optionDefinitions
+
 proc writeIndex {} {
    global indexLines chapterCount
    if {[info exists indexLines]} {

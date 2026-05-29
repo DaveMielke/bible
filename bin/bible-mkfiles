@@ -1,5 +1,11 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
+
+set optionDefinitions {
+}
+
+processProgramArguments optionValues $optionDefinitions
+
 file mkdir [set hypertextDirectory [getHypertextDirectory]]
 foreach name [glob -directory [set filesDirectory [getFilesDirectory]] -tails -nocomplain *] {
    set oldPath [file join $hypertextDirectory $name]
