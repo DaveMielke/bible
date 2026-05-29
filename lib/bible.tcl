@@ -1,3 +1,4 @@
+source /home/dave/brltty/git/main/brltty-prologue.tcl
 lappend auto_path /mnt/opt/dave/lib/tcl
 
 proc setOutputEncoding {stream} {
@@ -419,12 +420,22 @@ proc compareFiles {file1 file2} {
 }
 
 proc replaceFile {newFile oldFile} {
+   set preferredPermissions 0o644
    if {[file exists $oldFile]} {
+      set actualPermissions [file attributes $oldFile -permissions]
+      if {$actualPermissions != $preferredPermissions} {
+         logWarning "unexpected file permissions: $actualPermissions != $preferredPermissions: $oldFile"
+      }
       if {[compareFiles $newFile $oldFile]} {
+         logDetail "file not updated: $oldFile"
          file delete $newFile
          return 0
       }
+   } else {
+      set actualPermissions $preferredPermissions
    }
+   logNote "updating file: $oldFile"
+   file attributes $newFile -permissions $actualPermissions
    file rename -force $newFile $oldFile
    return 1
 }
@@ -479,4 +490,5 @@ proc prepareEnvironment {} {
       putProgramError "unknown language code: $bible(language)"
    }
 }
+
 prepareEnvironment
