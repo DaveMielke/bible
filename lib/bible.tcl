@@ -419,11 +419,14 @@ proc compareFiles {file1 file2} {
 }
 
 proc replaceFile {newFile oldFile} {
-   if {[compareFiles $newFile $oldFile]} {
-      file delete $newFile
-   } else {
-      file rename -force $newFile $oldFile
+   if {[file exists $oldFile]} {
+      if {[compareFiles $newFile $oldFile]} {
+         file delete $newFile
+         return 0
+      }
    }
+   file rename -force $newFile $oldFile
+   return 1
 }
 
 proc includeFile {path {substitutionsArray ""}} {
