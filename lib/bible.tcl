@@ -405,16 +405,6 @@ proc documentStarted {} {
    return [info exists bible(document,type)]
 }
 
-proc readFile {path {binary 0}} {
-   withChannel channel [open $path {RDONLY}] {
-      if {$binary} {
-         fconfigure $channel -translation binary
-      }
-
-      return [read -nonewline $channel]
-   }
-}
-
 proc compareFiles {file1 file2} {
    return [string equal [readFile $file1 1] [readFile $file2 1]]
 }
@@ -452,7 +442,7 @@ proc includeFile {path {substitutionsArray ""}} {
          lappend map "@$name@" $substitutions($name)
       }
    }
-   foreach line [split [readFile $path] \n] {
+   foreach line [readLines $path] {
       addLine [string map $map $line]
    }
 }
