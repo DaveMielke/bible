@@ -5,29 +5,12 @@ loadBookDefinitions
 set caseKeywords {ignore respect}
 set modeKeywords {every any phrase}
 set styleKeywords {verses refs}
-
-proc testInteger {value {minimum ""} {maximum ""}} {
-   if {![string is digit $value]} {
-      return 0
-   }
-   if {([clength $value] > 1) && [cequal [cindex $value 0] 0]} {
-      return 0
-   }
-   if {[clength $minimum] > 0} {
-      if {$value < $minimum} {
-         return 0
-      }
-   }
-   if {[clength $maximum] > 0} {
-      if {$value > $maximum} {
-         return 0
-      }
-   }
-   return 1
-}
+set errorsMinimum 0
+set errorsMaximum 8
 
 proc testErrors {value} {
-   return [testInteger $value 0 8]
+   global errorsMinimum errorsMaximum
+   return [testInteger $value $errorsMinimum $errorsMaximum]
 }
 
 proc escapeString {string} {
@@ -271,10 +254,10 @@ if {[lempty $argv]} {
    set optionDefinitions {
       {case flag "respect case when matching"}
       {noheaders flag "don't output the table headers"}
-      {errors integer.errors "how many spelling errors to allow"}
    }
 
    addKeywordOption optionDefinitions mode "how to apply the specified words" $modeKeywords
+   addIntegerOption optionDefinitions errors "how many spelling errors to allow" $errorsMinimum $errorsMaximum
    processProgramArguments optionValues $optionDefinitions wordList "word ..." getArgumentsUsageSummary
    verifyKeywordOption optionValues(mode) mode $modeKeywords
 
@@ -282,10 +265,9 @@ if {[lempty $argv]} {
    set caseSensitive $optionValues(case)
 
    if {![info exists optionValues(errors)]} {
-      set spellingErrors 0
-   } elseif {![testErrors $optionValues(errors)]} {
-      syntaxError "invalid errrors value: $optionValues(errors)"
+      set spellingErrors $errorsMinimum
    } else {
+      verifyIntegerOption $optionValues(errors) errors $errorsMinimum $errorsMaximum
       set spellingErrors $optionValues(errors)
    }
 
