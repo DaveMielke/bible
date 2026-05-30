@@ -11,7 +11,7 @@
 <li>
 @mode.statement@
 <select name="mode">
-<option value="all" selected>@mode.all@
+<option value="every" selected>@mode.every@
 <option value="any">@mode.any@
 <option value="phrase">@mode.phrase@
 </select>

@@ -87,7 +87,7 @@ proc setSearchSubstitutions {substitutionsArray} {
    set substitutions(errors.8) "eight"
 
    set substitutions(mode.statement) "Find those verses in which:"
-   set substitutions(mode.all) "all of the words appear"
+   set substitutions(mode.every) "every word appears"
    set substitutions(mode.any) "any of the words appear"
    set substitutions(mode.phrase) "the phrase appears"
 
@@ -116,7 +116,7 @@ proc setResultsSubstitutions {substitutionsArray} {
    set substitutions(errors.problem) "An invalid spelling error limit has been specified."
 
    set substitutions(mode.problem) "An invalid selection mode has been specified."
-   set substitutions(mode.all) "Match all words"
+   set substitutions(mode.every) "Match every word"
    set substitutions(mode.any) "Match any word"
    set substitutions(mode.phrase) "Match phrase"
 

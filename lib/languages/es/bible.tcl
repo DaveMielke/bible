@@ -80,7 +80,7 @@ proc setSearchSubstitutions {substitutionsArray} {
    set substitutions(errors.7) "siete"
    set substitutions(errors.8) "ocho"
    set substitutions(mode.statement) "Encuentre versículos en los cuales:"
-   set substitutions(mode.all) "todas las palabras aparecen"
+   set substitutions(mode.every) "todas las palabras aparecen"
    set substitutions(mode.any) "cualesquiera de las palabras aparecen"
 }
 
@@ -98,7 +98,7 @@ proc setResultsSubstitutions {substitutionsArray} {
    set substitutions(case.respect) "Caso importa"
    set substitutions(errors.problem) "Un limite de errores ortográficos ha sido especificado."
    set substitutions(mode.problem) "Un modo de selección invalido ha sido especificado."
-   set substitutions(mode.all) "Empareja todas las palabras"
+   set substitutions(mode.every) "Empareja todas las palabras"
    set substitutions(mode.any) "Empareja cualquier palabra"
 }
 proc getResults_errorsLimit {count} {

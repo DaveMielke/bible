@@ -2,6 +2,10 @@
 source [file join [file dirname $argv0] .. lib bible.tcl]
 loadBookDefinitions
 
+set caseKeywords {ignore respect}
+set modeKeywords {every any phrase}
+set styleKeywords {verses refs}
+
 proc addMenu {name value internalList externalList} {
    addLine "<select name=\"$name\">"
    foreach internal $internalList external $externalList {
@@ -54,15 +58,19 @@ proc joinWords {operator} {
    }
    return $string
 }
+
 proc cgiImport {parameter {default ""}} {
    upvar 1 $parameter $parameter
+
    if {[catch [list cgi_import $parameter] response] == 0} {
       set $parameter [string trim [set $parameter]]
       return 1
    }
+
    set $parameter $default
    return 0
 }
+
 proc findVerses {code} {
    global selectionMode caseSensitive spellingErrors
    bindVerseVariables
@@ -74,7 +82,7 @@ proc findVerses {code} {
    lappend command -$spellingErrors
    lappend command -e
    switch -exact -- $selectionMode {
-      all {
+      every {
          lappend command [joinWords \;]
       }
       any {
@@ -101,9 +109,9 @@ if {[lempty $argv]} {
    startBasicDocument search.cgi [getResultsTitle]
 
    setResultsSubstitutions substitutions
-   set resultStyle verses
-   set selectionMode all
-   set caseSensitive 0
+   set caseSensitive [lindex $caseKeywords 0]
+   set selectionMode [lindex $modeKeywords 0]
+   set resultStyle [lindex $styleKeywords 0]
    set spellingErrors 0
 
    cgi_eval {
@@ -116,25 +124,22 @@ if {[lempty $argv]} {
 	 set wordList [split $data]
       }
 
-      cgiImport style verses
-      set styleList {verses refs}
-      if {[set styleIndex [lsearch -exact $styleList $style]] < 0} {
+      cgiImport style [lindex $styleKeywords 0]
+      if {[set styleIndex [lsearch -exact $styleKeywords $style]] < 0} {
 	 lappend problems $substitutions(style.problem)
       } else {
-	 set resultStyle [lindex $styleList $styleIndex]
+	 set resultStyle [lindex $styleKeywords $styleIndex]
       }
 
-      cgiImport mode all
-      set modeList {all any phrase}
-      if {[set modeIndex [lsearch -exact $modeList $mode]] < 0} {
+      cgiImport mode [lindex $modeKeywords 0]
+      if {[set modeIndex [lsearch -exact $modeKeywords $mode]] < 0} {
 	 lappend problems $substitutions(mode.problem)
       } else {
-	 set selectionMode [lindex $modeList $modeIndex]
+	 set selectionMode [lindex $modeKeywords $modeIndex]
       }
 
-      cgiImport case ignore
-      set caseList {ignore respect}
-      if {[set caseIndex [lsearch -exact $caseList $case]] < 0} {
+      cgiImport case [lindex $caseKeywords 0]
+      if {[set caseIndex [lsearch -exact $caseKeywords $case]] < 0} {
 	 lappend problems $substitutions(case.problem)
       } else {
 	 set caseSensitive $caseIndex
@@ -160,11 +165,11 @@ if {[lempty $argv]} {
 	 addLine "<input type=\"submit\" value=\"$substitutions(label.search)\">"
 	 addLine "<ul>"
 	 addLine "<li>"
-	 addMenu style $style $styleList [list $substitutions(style.verses) $substitutions(style.refs)]
+	 addMenu style $style $styleKeywords [list $substitutions(style.verses) $substitutions(style.refs)]
 	 addLine "<li>"
-	 addMenu mode $mode $modeList [list $substitutions(mode.all) $substitutions(mode.any) $substitutions(mode.phrase)]
+	 addMenu mode $mode $modeKeywords [list $substitutions(mode.every) $substitutions(mode.any) $substitutions(mode.phrase)]
 	 addLine "<li>"
-	 addMenu case $case $caseList [list $substitutions(case.ignore) $substitutions(case.respect)]
+	 addMenu case $case $caseKeywords [list $substitutions(case.ignore) $substitutions(case.respect)]
 	 addLine "<li>"
          loop i 0 9 {
             lappend internalErrorsList $i
@@ -281,9 +286,7 @@ if {[lempty $argv]} {
       {errors integer.errors "how flexible to be with spelling errors (0-8)"}
    }
 
-   set modeKeywords {all any phrase}
    addKeywordOption optionDefinitions mode "how to apply the specified words" $modeKeywords
-
    processProgramArguments optionValues $optionDefinitions wordList "word ..."
    verifyKeywordValue optionValues(mode) mode $modeKeywords
 
