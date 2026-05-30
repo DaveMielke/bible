@@ -1,10 +1,6 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
-
-set optionDefinitions {
-}
-
-processProgramArguments optionValues $optionDefinitions positionalArguments "abc ..."
+loadBookDefinitions
 
 proc addMenu {name value internalList externalList} {
    addLine "<select name=\"$name\">"
@@ -68,42 +64,48 @@ proc cgiImport {parameter {default ""}} {
    return 0
 }
 proc findVerses {code} {
-   global selectionMode caseSensitive spellingErrors
+   global optionValues caseSensitive
    bindVerseVariables
    set command [list < /dev/null glimpse -y -h -H [getGlimpseDirectory]]
    if {!$caseSensitive} {
       lappend command -i
    }
    lappend command -w
-   lappend command -$spellingErrors
+   lappend command -$optionValues(errors)
    lappend command -e
-   switch -exact -- $selectionMode {
-      all {
+   switch -exact -- $optionValues(mode) {
+      and {
          lappend command [joinWords \;]
       }
-      any {
+      or {
          lappend command [joinWords ,]
       }
       phrase {
          lappend command [joinWords " "]
+      }
+      default {
+         internalError "unexpected mode value: $optionValues(mode)"
       }
    }
    if {[catch [list openInputStream "|$command"] stream] == 0} {
       uplevel 1 [list scanVerses $stream $code]
       catch [list close $stream]; unset stream
    } else {
-      putProgramMessage "$stream"
+      internalError "$stream"
    }
 }
-loadBookDefinitions
-setResultsSubstitutions substitutions
-set resultStyle verses
-set selectionMode all
-set caseSensitive 0
-set spellingErrors 0
+
 if {[lempty $argv]} {
    source [file join [getLibraryDirectory] "cgi.tcl"]
+
    startBasicDocument search.cgi [getResultsTitle]
+
+   setResultsSubstitutions substitutions
+   set resultStyle verses
+   set selectionMode all
+   set caseSensitive 0
+   set spellingErrors 0
+
    cgi_eval {
       cgi_content_type "text/html"
       cgi_input
@@ -239,54 +241,76 @@ if {[lempty $argv]} {
    }
    endDocument stdout
 } else {
-   set outputHeader 1
-   parseProgramArguments operands {word args} {
-      verses {} {
-         set resultStyle verses
-      }
-      refs {} {
-         set resultStyle refs
-      }
-      all {} {
-         set selectionMode all
-      }
-      any {} {
-         set selectionMode any
-      }
-      phrase {} {
-         set selectionMode phrase
-      }
-      case {} {
-         set caseSensitive 1
-      }
-      nocase {} {
-         set caseSensitive 0
-      }
-      errors {spelling_error_count} {
-	 if {![testErrors [set spellingErrors $operands(spelling_error_count)]]} {
-	    break
-	 }
-      }
-      header {} {
-	 set outputHeader 1
-      }
-      noheader {} {
-	 set outputHeader 0
-      }
+   proc addKeywordOption {definitionsVariable name usage keywords} {
+      upvar 1 $definitionsVariable definitions
+      lappend definitions [list $name untyped.$name "$usage ([join $keywords ", "])"]
    }
-   set wordList [list $operands(word)]
-   lvarcat wordList $operands(args)
-   unset operands
+
+   proc verifyKeywordValue {valueVariable description keywordList} {
+      upvar 1 $valueVariable value
+
+      if {![info exists value]} {
+         set value [lindex $keywordList 0]
+         return 0
+      }
+
+      set valueLength [string length $value]
+
+      loop index 0 [llength $keywordList] {
+         set keyword [lindex $keywordList $index]
+
+         if {[string equal -nocase -length $valueLength $value $keyword]} {
+            set value $keyword
+            return $index
+         }
+      }
+
+      syntaxError "unrecognized $description value: $value"
+      return -1
+   }
+
+   set optionDefinitions {
+      {respect flag "respect case when matching"}
+      {noheaders flag "don't output the table headers"}
+      {errors integer.errors "how flexible to be with spelling errors (0-8)"}
+   }
+
+   set modeKeywords {and or phrase}
+   addKeywordOption optionDefinitions mode "how to apply the specified words" $modeKeywords
+
+   set styleKeywords {verses refs}
+   addKeywordOption optionDefinitions style "how to show the search results" $styleKeywords
+
+   processProgramArguments optionValues $optionDefinitions wordList "word ..."
+
+   verifyKeywordValue optionValues(mode) mode $modeKeywords
+   verifyKeywordValue optionValues(style) style $styleKeywords
+   set caseSensitive $optionValues(respect)
+
+   if {![info exists optionValues(errors)]} {
+      set optionValues(errors) 0
+   } elseif {![testErrors $optionValues(errors)]} {
+      syntaxError "invalid errrors value: $optionValues(errors)"
+   }
+
+   if {[lempty $wordList]} {
+      syntaxError "word not specified"
+   }
+
    set verseTable [list]
    findVerses {
       lappend verseTable [list [getBookName $bookKey] "$chapterNumber:$verseNumber" $verseText]
    }
+
    if {[lempty $verseTable]} {
-      putProgramError "verse not found."
+      semanticError "verse not found"
    }
-   if {$outputHeader} {
+
+   if {!$optionValues(noheaders)} {
       lvarpush verseTable [list Book Verse Text]
    }
+
    puts -nonewline stdout [formatTable $verseTable 1 {{right} {left} {left}}]
 }
+
 exit 0
