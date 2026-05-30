@@ -74,6 +74,7 @@ proc cgiImport {parameter {default ""}} {
 proc findVerses {code} {
    global selectionMode caseSensitive spellingErrors
    bindVerseVariables
+
    set command [list < /dev/null glimpse -y -h -H [getGlimpseDirectory]]
    if {!$caseSensitive} {
       lappend command -i
@@ -81,20 +82,25 @@ proc findVerses {code} {
    lappend command -w
    lappend command -$spellingErrors
    lappend command -e
+
    switch -exact -- $selectionMode {
       every {
          lappend command [joinWords \;]
       }
+
       any {
          lappend command [joinWords ,]
       }
+
       phrase {
          lappend command [joinWords " "]
       }
+
       default {
          internalError "unexpected mode value: $selectionMode"
       }
    }
+
    if {[catch [list openInputStream "|$command"] stream] == 0} {
       uplevel 1 [list scanVerses $stream $code]
       catch [list close $stream]; unset stream
@@ -283,7 +289,7 @@ if {[lempty $argv]} {
    set optionDefinitions {
       {case flag "respect case when matching"}
       {noheaders flag "don't output the table headers"}
-      {errors integer.errors "how flexible to be with spelling errors (0-8)"}
+      {errors integer.errors "how many spelling errors to allow"}
    }
 
    addKeywordOption optionDefinitions mode "how to apply the specified words" $modeKeywords
