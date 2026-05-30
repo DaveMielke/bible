@@ -262,32 +262,10 @@ if {[lempty $argv]} {
    }
    endDocument stdout
 } else {
-   proc addKeywordOption {definitionsVariable name usage keywords} {
-      upvar 1 $definitionsVariable definitions
-      lappend definitions [list $name untyped.$name "$usage ([join $keywords ", "])"]
-   }
-
-   proc verifyKeywordValue {valueVariable description keywordList} {
-      upvar 1 $valueVariable value
-
-      if {![info exists value]} {
-         set value [lindex $keywordList 0]
-         return 0
-      }
-
-      set valueLength [string length $value]
-
-      loop index 0 [llength $keywordList] {
-         set keyword [lindex $keywordList $index]
-
-         if {[string equal -nocase -length $valueLength $value $keyword]} {
-            set value $keyword
-            return $index
-         }
-      }
-
-      syntaxError "unrecognized $description value: $value"
-      return -1
+   proc getArgumentsUsageSummary {} {
+      set lines [list]
+      lappend lines "If no arguments (neither options nor parameters) are specified then the Search Results web page is generated."
+      return $lines
    }
 
    set optionDefinitions {
@@ -297,8 +275,8 @@ if {[lempty $argv]} {
    }
 
    addKeywordOption optionDefinitions mode "how to apply the specified words" $modeKeywords
-   processProgramArguments optionValues $optionDefinitions wordList "word ..."
-   verifyKeywordValue optionValues(mode) mode $modeKeywords
+   processProgramArguments optionValues $optionDefinitions wordList "word ..." getArgumentsUsageSummary
+   verifyKeywordOption optionValues(mode) mode $modeKeywords
 
    set selectionMode $optionValues(mode)
    set caseSensitive $optionValues(case)
