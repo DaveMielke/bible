@@ -4,33 +4,36 @@ source [file join [file dirname $argv0] .. lib bible.tcl]
 set optionDefinitions {
 }
 
-set columns 4
+set columns 3
 processProgramArguments optionValues $optionDefinitions
 
 proc makeTestamentIndex {testamentName firstBook lastBook} {
-   global lines columns
+   global columns
+
    set keys [lrange [getBookKeys] $firstBook $lastBook]
    set rows [expr {([llength $keys] + $columns - 1) / $columns}]
    set width "[expr {100 / $columns}]%"
+
    addLine "<h3>[getTestamentTitle_$testamentName]</h3>"
-   addLine "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">"
-   addLine "<tr>"
-   loop column 0 $columns {
-      addLine "<td valign=\"top\" width=\"$width\">"
-      addLine "<ul>"
-      loop row 0 $rows {
-         if {[clength [set key [lindex $keys [expr {($column * $rows) + $row}]]]] == 0} {
-	    break
-	 }
-	 addLine "<li>"
-	 addLink [getBookName $key] [getBookUrl [getBookIndex $key]]
+   addLine "<table>"
+
+   loop row 0 $rows {
+      addLine "<tr>"
+
+      loop column 0 $columns {
+         if {[clength [set key [lindex $keys [expr {($column * $rows) + $row}]]]] > 0} {
+            addLine "<td>"
+            addLink [getBookName $key] [getBookUrl [getBookIndex $key]]
+            addLine "</td>"
+         }
       }
-      addLine "</ul>"
-      addLine "</td>"
+
+      addLine "</tr>"
    }
-   addLine "</tr>"
+
    addLine "</table>"
 }
+
 proc makeTestamentIndeces {} {
    makeTestamentIndex old 0 38
    makeTestamentIndex new 39 65
