@@ -406,26 +406,29 @@ proc documentStarted {} {
 }
 
 proc readFile {path {binary 0}} {
-   set stream [open $path {RDONLY}]
-   if {$binary} {
-      fconfigure $stream -translation binary
+   withChannel channel [open $path {RDONLY}] {
+      if {$binary} {
+         fconfigure $channel -translation binary
+      }
+
+      return [read -nonewline $channel]
    }
-   set result [read -nonewline $stream]
-   close $stream; unset stream
-   return $result
 }
 
 proc compareFiles {file1 file2} {
    return [string equal [readFile $file1 1] [readFile $file2 1]]
 }
 
-proc refreshFile {newFile oldFile} {
-   set preferredPermissions 0o644
+proc refreshFile {newFile oldFile {executable 0}} {
+   set preferredPermissions [expr {$executable? 0o755: 0o644}]
+
    if {[file exists $oldFile]} {
       set actualPermissions [file attributes $oldFile -permissions]
+
       if {$actualPermissions != $preferredPermissions} {
          logWarning "unexpected file permissions: $actualPermissions != $preferredPermissions: $oldFile"
       }
+
       if {[compareFiles $newFile $oldFile]} {
          logDetail "file not updated: $oldFile"
          file delete $newFile
@@ -434,6 +437,7 @@ proc refreshFile {newFile oldFile} {
    } else {
       set actualPermissions $preferredPermissions
    }
+
    logNote "updating file: $oldFile"
    file attributes $newFile -permissions $actualPermissions
    file rename -force $newFile $oldFile
