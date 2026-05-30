@@ -6,18 +6,6 @@ set caseKeywords {ignore respect}
 set modeKeywords {every any phrase}
 set styleKeywords {verses refs}
 
-proc addMenu {name value internalList externalList} {
-   addLine "<select name=\"$name\">"
-   foreach internal $internalList external $externalList {
-      if {[cequal $internal $value]} {
-         set selected " SELECTED"
-      } else {
-         set selected ""
-      }
-      addLine "<option value=\"$internal\"$selected>$external"
-   }
-   addLine "</select>"
-}
 proc testInteger {value {minimum ""} {maximum ""}} {
    if {![string is digit $value]} {
       return 0
@@ -37,13 +25,16 @@ proc testInteger {value {minimum ""} {maximum ""}} {
    }
    return 1
 }
+
 proc testErrors {value} {
    return [testInteger $value 0 8]
 }
+
 proc escapeString {string} {
    regsub -all {([-;,#<>^$(|).[*!\\])} $string {\\\1} string
    return $string
 }
+
 proc joinWords {operator} {
    global wordList
    set string ""
@@ -57,18 +48,6 @@ proc joinWords {operator} {
       append string [escapeString $word]
    }
    return $string
-}
-
-proc cgiImport {parameter {default ""}} {
-   upvar 1 $parameter $parameter
-
-   if {[catch [list cgi_import $parameter] response] == 0} {
-      set $parameter [string trim [set $parameter]]
-      return 1
-   }
-
-   set $parameter $default
-   return 0
 }
 
 proc findVerses {code} {
@@ -111,6 +90,31 @@ proc findVerses {code} {
 
 if {[lempty $argv]} {
    source [file join [getLibraryDirectory] "cgi.tcl"]
+
+   proc cgiImport {parameter {default ""}} {
+      upvar 1 $parameter $parameter
+
+      if {[catch [list cgi_import $parameter] response] == 0} {
+         set $parameter [string trim [set $parameter]]
+         return 1
+      }
+
+      set $parameter $default
+      return 0
+   }
+
+   proc addMenu {name value internalList externalList} {
+      addLine "<select name=\"$name\">"
+      foreach internal $internalList external $externalList {
+         if {[cequal $internal $value]} {
+            set selected " SELECTED"
+         } else {
+            set selected ""
+         }
+         addLine "<option value=\"$internal\"$selected>$external"
+      }
+      addLine "</select>"
+   }
 
    startBasicDocument search.cgi [getResultsTitle]
 
