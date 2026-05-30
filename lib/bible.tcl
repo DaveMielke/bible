@@ -186,7 +186,7 @@ proc scanVerses {stream code} {
          set bookKey [string tolower $bookKey]
          uplevel 1 $code
       } else {
-         error "invalid verse format: $record"
+      #  error "invalid verse format: $record"
       }
    }
 }
