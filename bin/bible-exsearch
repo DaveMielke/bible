@@ -105,7 +105,7 @@ if {[lempty $argv]} {
    set caseSensitive [lindex $caseKeywords 0]
    set selectionMode [lindex $modeKeywords 0]
    set resultStyle [lindex $styleKeywords 0]
-   set spellingErrors 0
+   set spellingErrors $errorsMinimum
 
    cgi_eval {
       cgi_content_type "text/html"
@@ -138,7 +138,7 @@ if {[lempty $argv]} {
 	 set caseSensitive $caseIndex
       }
 
-      cgiImport errors 0
+      cgiImport errors $errorsMinimum
       if {![testErrors $errors]} {
 	 lappend problems $substitutions(errors.problem)
       } else {
@@ -264,11 +264,11 @@ if {[lempty $argv]} {
    set selectionMode $optionValues(mode)
    set caseSensitive $optionValues(case)
 
-   if {![info exists optionValues(errors)]} {
-      set spellingErrors $errorsMinimum
-   } else {
+   if {[info exists optionValues(errors)]} {
       verifyIntegerOption $optionValues(errors) errors $errorsMinimum $errorsMaximum
       set spellingErrors $optionValues(errors)
+   } else {
+      set spellingErrors $errorsMinimum
    }
 
    if {[lempty $wordList]} {
