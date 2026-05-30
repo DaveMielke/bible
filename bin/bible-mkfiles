@@ -11,6 +11,6 @@ foreach name [glob -directory [set filesDirectory [getFilesDirectory]] -tails -n
    set oldPath [file join $hypertextDirectory $name]
    set newPath "$oldPath.new"
    file copy -force -- [file join $filesDirectory $name] $newPath
-   replaceFile $newPath $oldPath
+   refreshFile $newPath $oldPath
 }
 exit 0

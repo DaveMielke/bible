@@ -18,5 +18,5 @@ foreach variable $variables {
    puts $stream "$name=$value"
 }
 close $stream; unset stream
-replaceFile $newFile $oldFile
+refreshFile $newFile $oldFile
 exit 0

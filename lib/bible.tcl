@@ -395,7 +395,7 @@ proc endDocument {{stream ""}} {
       set stream [open $bible(document,file,new) {WRONLY TRUNC CREAT}]
       writeDocument $stream
       close $stream; unset stream
-      replaceFile $bible(document,file,new) $bible(document,file,old)
+      refreshFile $bible(document,file,new) $bible(document,file,old)
    }
    unset bible(document,type)
 }
@@ -419,7 +419,7 @@ proc compareFiles {file1 file2} {
    return [string equal [readFile $file1 1] [readFile $file2 1]]
 }
 
-proc replaceFile {newFile oldFile} {
+proc refreshFile {newFile oldFile} {
    set preferredPermissions 0o644
    if {[file exists $oldFile]} {
       set actualPermissions [file attributes $oldFile -permissions]
