@@ -395,7 +395,7 @@ proc endDocument {{stream ""}} {
       set stream [open $bible(document,file,new) {WRONLY TRUNC CREAT}]
       writeDocument $stream
       close $stream; unset stream
-      refreshFile $bible(document,file,new) $bible(document,file,old)
+      refreshFile $bible(document,file,new) $bible(document,file,old) 0
    }
    unset bible(document,type)
 }
@@ -403,35 +403,6 @@ proc endDocument {{stream ""}} {
 proc documentStarted {} {
    global bible
    return [info exists bible(document,type)]
-}
-
-proc compareFiles {file1 file2} {
-   return [string equal [readFile $file1 1] [readFile $file2 1]]
-}
-
-proc refreshFile {newFile oldFile {executable 0}} {
-   set preferredPermissions [expr {$executable? 0o755: 0o644}]
-
-   if {[file exists $oldFile]} {
-      set actualPermissions [file attributes $oldFile -permissions]
-
-      if {$actualPermissions != $preferredPermissions} {
-         logWarning "unexpected file permissions: $actualPermissions != $preferredPermissions: $oldFile"
-      }
-
-      if {[compareFiles $newFile $oldFile]} {
-         logDetail "file not updated: $oldFile"
-         file delete $newFile
-         return 0
-      }
-   } else {
-      set actualPermissions $preferredPermissions
-   }
-
-   logNote "updating file: $oldFile"
-   file attributes $newFile -permissions $actualPermissions
-   file rename -force $newFile $oldFile
-   return 1
 }
 
 proc includeFile {path {substitutionsArray ""}} {
