@@ -64,27 +64,27 @@ proc cgiImport {parameter {default ""}} {
    return 0
 }
 proc findVerses {code} {
-   global optionValues caseSensitive
+   global selectionMode caseSensitive spellingErrors
    bindVerseVariables
    set command [list < /dev/null glimpse -y -h -H [getGlimpseDirectory]]
    if {!$caseSensitive} {
       lappend command -i
    }
    lappend command -w
-   lappend command -$optionValues(errors)
+   lappend command -$spellingErrors
    lappend command -e
-   switch -exact -- $optionValues(mode) {
-      and {
+   switch -exact -- $selectionMode {
+      all {
          lappend command [joinWords \;]
       }
-      or {
+      any {
          lappend command [joinWords ,]
       }
       phrase {
          lappend command [joinWords " "]
       }
       default {
-         internalError "unexpected mode value: $optionValues(mode)"
+         internalError "unexpected mode value: $selectionMode"
       }
    }
    if {[catch [list openInputStream "|$command"] stream] == 0} {
@@ -109,11 +109,13 @@ if {[lempty $argv]} {
    cgi_eval {
       cgi_content_type "text/html"
       cgi_input
+
       if {![cgiImport data ""]} {
 	 lappend problems $substitutions(input.empty)
       } else {
 	 set wordList [split $data]
       }
+
       cgiImport style verses
       set styleList {verses refs}
       if {[set styleIndex [lsearch -exact $styleList $style]] < 0} {
@@ -121,6 +123,7 @@ if {[lempty $argv]} {
       } else {
 	 set resultStyle [lindex $styleList $styleIndex]
       }
+
       cgiImport mode all
       set modeList {all any phrase}
       if {[set modeIndex [lsearch -exact $modeList $mode]] < 0} {
@@ -128,6 +131,7 @@ if {[lempty $argv]} {
       } else {
 	 set selectionMode [lindex $modeList $modeIndex]
       }
+
       cgiImport case ignore
       set caseList {ignore respect}
       if {[set caseIndex [lsearch -exact $caseList $case]] < 0} {
@@ -135,12 +139,14 @@ if {[lempty $argv]} {
       } else {
 	 set caseSensitive $caseIndex
       }
+
       cgiImport errors 0
       if {![testErrors $errors]} {
 	 lappend problems $substitutions(errors.problem)
       } else {
 	 set spellingErrors $errors
       }
+
       if {[info exists problems]} {
 	 addLine $substitutions(statement.problem)
 	 addLine "<ul>"
@@ -270,27 +276,26 @@ if {[lempty $argv]} {
    }
 
    set optionDefinitions {
-      {respect flag "respect case when matching"}
+      {case flag "respect case when matching"}
       {noheaders flag "don't output the table headers"}
       {errors integer.errors "how flexible to be with spelling errors (0-8)"}
    }
 
-   set modeKeywords {and or phrase}
+   set modeKeywords {all any phrase}
    addKeywordOption optionDefinitions mode "how to apply the specified words" $modeKeywords
 
-   set styleKeywords {verses refs}
-   addKeywordOption optionDefinitions style "how to show the search results" $styleKeywords
-
    processProgramArguments optionValues $optionDefinitions wordList "word ..."
-
    verifyKeywordValue optionValues(mode) mode $modeKeywords
-   verifyKeywordValue optionValues(style) style $styleKeywords
-   set caseSensitive $optionValues(respect)
+
+   set selectionMode $optionValues(mode)
+   set caseSensitive $optionValues(case)
 
    if {![info exists optionValues(errors)]} {
-      set optionValues(errors) 0
+      set spellingErrors 0
    } elseif {![testErrors $optionValues(errors)]} {
       syntaxError "invalid errrors value: $optionValues(errors)"
+   } else {
+      set spellingErrors $optionValues(errors)
    }
 
    if {[lempty $wordList]} {
