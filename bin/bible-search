@@ -159,7 +159,7 @@ if {[lempty $argv]} {
 	 addLine "<li>"
 	 addMenu case $case $caseKeywords [list $substitutions(case.ignore) $substitutions(case.respect)]
 	 addLine "<li>"
-         loop i 0 9 {
+         for {set i $errorsMinimum} {$i <= $errorsMaximum} {incr i} {
             lappend internalErrorsList $i
             lappend externalErrorsList [getResults_errorsLimit $i]
          }
