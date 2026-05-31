@@ -12,5 +12,5 @@ cd ..
 . ./vars
 export BIBLE_VERSION
 
-exec "${BIBLE_ROOT}/bin/bible-exsearch"
+exec "${BIBLE_ROOT}/bin/bible-search"
 exit 0
