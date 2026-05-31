@@ -2,17 +2,6 @@
 source [file join [file dirname $argv0] .. lib bible.tcl]
 loadBookDefinitions
 
-set caseKeywords {ignore respect}
-set modeKeywords {every any phrase}
-set styleKeywords {verses refs}
-set errorsMinimum 0
-set errorsMaximum 8
-
-proc testErrors {value} {
-   global errorsMinimum errorsMaximum
-   return [testInteger $value $errorsMinimum $errorsMaximum]
-}
-
 proc escapeString {string} {
    regsub -all {([-;,#<>^$(|).[*!\\])} $string {\\\1} string
    return $string
@@ -70,6 +59,12 @@ proc findVerses {code} {
       internalError "$stream"
    }
 }
+
+set caseKeywords {ignore respect}
+set modeKeywords {every any phrase}
+set styleKeywords {verses refs}
+set errorsMinimum 0
+set errorsMaximum 8
 
 if {[lempty $argv]} {
    source [file join [getLibraryDirectory] "cgi.tcl"]
@@ -139,7 +134,7 @@ if {[lempty $argv]} {
       }
 
       cgiImport errors $errorsMinimum
-      if {![testErrors $errors]} {
+      if {![testInteger $errors $errorsMinimum $errorsMaximum]} {
 	 lappend problems $substitutions(errors.problem)
       } else {
 	 set spellingErrors $errors
