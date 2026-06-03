@@ -208,7 +208,7 @@ proc getDocumentExtension {} {
    return .html
 }
 
-proc makeUrl {components} {
+proc makeURL {components} {
    global bible
 
    set name [lvarpop components end]
@@ -237,12 +237,12 @@ proc makeUrl {components} {
    return [join $components /]
 }
 
-proc getBookUrl {index} {
+proc getBookURL {index} {
    global bible
    if {(($index < 0) || ($index >= $bible(book,count)))} {
       return ""
    }
-   return [makeUrl [list "[getBookIdentifier [getBookKey $index]][getDocumentExtension]"]]
+   return [makeURL [list "[getBookIdentifier [getBookKey $index]][getDocumentExtension]"]]
 }
 
 proc getChapterName {chapter} {
@@ -253,12 +253,12 @@ proc getChapterName {chapter} {
    return $name
 }
 
-proc getChapterUrl {book chapter} {
+proc getChapterURL {book chapter} {
    global bible
    if {(($chapter < 1) || ($chapter > [getChapterCount $book]))} {
       return ""
    }
-   return [makeUrl [list [getBookIdentifier $book] "[getChapterName $chapter][getDocumentExtension]"]]
+   return [makeURL [list [getBookIdentifier $book] "[getChapterName $chapter][getDocumentExtension]"]]
 }
 
 proc markDocument {} {
@@ -282,7 +282,7 @@ proc addLine {line} {
 
 proc addLink {text url {image ""}} {
    if {[clength $image] > 0} {
-      set text "<img src=\"[makeUrl [list $image]]\" alt=\"$text\">"
+      set text "<img src=\"[makeURL [list $image]]\" alt=\"$text\">"
    }
    if {[clength $url] > 0} {
       set text "<a href=\"$url\">$text</a>"
@@ -290,13 +290,13 @@ proc addLink {text url {image ""}} {
    addLine $text
 }
 
-proc addSelectors {} {
+proc addNavigationBar {} {
    global bible
 
    set previousBook ""
-   set bookIndex [makeUrl [list "index[getDocumentExtension]"]]
+   set bookIndex [makeURL [list "index[getDocumentExtension]"]]
    set nextBook ""
-   set searchForm [makeUrl [list "search[getDocumentExtension]"]]
+   set searchForm [makeURL [list "search[getDocumentExtension]"]]
    set previousChapter ""
    set chapterIndex ""
    set nextChapter ""
@@ -305,15 +305,15 @@ proc addSelectors {} {
       global currentBook
 
       set currentBookIndex [getBookIndex $currentBook]
-      set previousBook [getBookUrl [expr {$currentBookIndex - 1}]]
-      set nextBook [getBookUrl [expr {$currentBookIndex + 1}]]
-      set chapterIndex [getBookUrl $currentBookIndex]
+      set previousBook [getBookURL [expr {$currentBookIndex - 1}]]
+      set nextBook [getBookURL [expr {$currentBookIndex + 1}]]
+      set chapterIndex [getBookURL $currentBookIndex]
 
       if {$bible(document,type) > 1} {
 	 global currentChapter
 
-	 set previousChapter [getChapterUrl $currentBook [expr {$currentChapter - 1}]]
-	 set nextChapter [getChapterUrl $currentBook [expr {$currentChapter + 1}]]
+	 set previousChapter [getChapterURL $currentBook [expr {$currentChapter - 1}]]
+	 set nextChapter [getChapterURL $currentBook [expr {$currentChapter + 1}]]
       }
    }
 
@@ -375,12 +375,12 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    addLine "<head>"
    addLine "<meta charset=\"[string toupper [getOutputEncoding]]\">"
    addLine "<meta name=\"description\" content=\"Accessible Bible - $bible(VERSION) ($bible(title)) - $title\">"
-   addLine "<link rel=\"stylesheet\" href=\"[makeUrl [list bible.css]]\">"
+   addLine "<link rel=\"stylesheet\" href=\"[makeURL [list bible.css]]\">"
    addLine "<title>[getGeneralTitle] - $bible(title) - $title</title>"
    addLine "</head>"
 
    addLine "<body>"
-   addSelectors
+   addNavigationBar
 
    addLine "<main>"
    addLine "<h1>$primaryHeader</h1>"
@@ -415,7 +415,7 @@ proc endDocument {{stream ""}} {
    addLine "</main>"
    addLine "<hr>"
 
-   addSelectors
+   addNavigationBar
    addLine "</body>"
    addLine "</html>"
 

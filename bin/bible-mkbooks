@@ -23,7 +23,7 @@ proc writeIndex {} {
 	    addLine "<tr>"
 
 	    addLine "<td>"
-	    addLink "[incr chapterNumber]" [getChapterUrl $currentBook $chapterNumber]
+	    addLink "[incr chapterNumber]" [getChapterURL $currentBook $chapterNumber]
 	    addLine "</td>"
 
 	    addLine "<td>"
