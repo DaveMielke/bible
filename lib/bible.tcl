@@ -210,23 +210,29 @@ proc getDocumentExtension {} {
 
 proc makeUrl {components} {
    global bible
+
    set name [lvarpop components end]
    set folder $bible(document,folder)
+
    while {!([lempty $folder] || [lempty $components])} {
       if {![cequal [lindex $folder 0] [lindex $components 0]]} {
          break
       }
+
       lvarpop folder
       lvarpop components
    }
+
    loop i 0 [llength $folder] {
       lvarpush components ..
    }
+
    if {[lempty $components]} {
       if {[cequal $name $bible(document,name)]} {
          return ""
       }
    }
+
    lappend components $name
    return [join $components /]
 }
@@ -286,6 +292,7 @@ proc addLink {text url {image ""}} {
 
 proc addSelectors {} {
    global bible
+
    set previousBook ""
    set bookIndex [makeUrl [list "index[getDocumentExtension]"]]
    set nextBook ""
@@ -293,21 +300,28 @@ proc addSelectors {} {
    set previousChapter ""
    set chapterIndex ""
    set nextChapter ""
+
    if {$bible(document,type) > 0} {
       global currentBook
+
       set currentBookIndex [getBookIndex $currentBook]
       set previousBook [getBookUrl [expr {$currentBookIndex - 1}]]
       set nextBook [getBookUrl [expr {$currentBookIndex + 1}]]
       set chapterIndex [getBookUrl $currentBookIndex]
+
       if {$bible(document,type) > 1} {
 	 global currentChapter
+
 	 set previousChapter [getChapterUrl $currentBook [expr {$currentChapter - 1}]]
 	 set nextChapter [getChapterUrl $currentBook [expr {$currentChapter + 1}]]
       }
    }
-   addLine "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">"
-   addLine "<tr valign=\"bottom\">"
-   addLine "<td width=\"33%\" align=\"left\">"
+
+   addLine "<nav>"
+   addLine "<table class=\"navigation-bar\">"
+   addLine "<tr>"
+
+   addLine "<td>"
    if {[clength $bookIndex] > 0} {
       addLink [getLabel_previousBook] $previousBook "LeftArrow.gif"
       addLink [getLabel_bookIndex] $bookIndex
@@ -316,14 +330,16 @@ proc addSelectors {} {
       addLine "&nbsp\;"
    }
    addLine "</td>"
-   addLine "<td width=\"34%\" align=\"center\">"
+
+   addLine "<td>"
    if {[clength $searchForm] > 0} {
       addLink [getLabel_search] $searchForm
    } else {
       addLine "&nbsp\;"
    }
    addLine "</td>"
-   addLine "<td width=\"33%\" align=\"right\">"
+
+   addLine "<td>"
    if {[clength $chapterIndex] > 0} {
       addLink [getLabel_previousChapter] $previousChapter "LeftArrow.gif"
       addLink [getLabel_chapterIndex] $chapterIndex
@@ -332,32 +348,43 @@ proc addSelectors {} {
       addLine "&nbsp\;"
    }
    addLine "</td>"
+
    addLine "</tr>"
    addLine "</table>"
+   addLine "</nav>"
 }
 
 proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    global bible
+
    set bible(document,type) $type
    set bible(document,mark,count) 0
+
    if {[clength [file extension [set bible(document,name) [lvarpop path end]]]] == 0} {
       append bible(document,name) [getDocumentExtension]
    }
+
    set bible(document,folder) $path
    set bible(document,directory) [eval file join [list [getHypertextDirectory]] $bible(document,folder)]
    set bible(document,file,old) [file join $bible(document,directory) $bible(document,name)]
    set bible(document,file,new) "$bible(document,file,old).new"
    set bible(document,lines) [list]
+
    addLine "<!DOCTYPE html>"
    addLine "<html lang=\"$bible(language)\">"
    addLine "<head>"
    addLine "<meta charset=\"[string toupper [getOutputEncoding]]\">"
    addLine "<meta name=\"description\" content=\"Accessible Bible - $bible(VERSION) ($bible(title)) - $title\">"
+   addLine "<link rel=\"stylesheet\" href=\"[makeUrl [list bible.css]]\">"
    addLine "<title>[getGeneralTitle] - $bible(title) - $title</title>"
    addLine "</head>"
+
    addLine "<body>"
    addSelectors
+
+   addLine "<main>"
    addLine "<h1>$primaryHeader</h1>"
+
    if {[clength $secondaryHeader] > 0} {
       addLine "<h2>$secondaryHeader</h2>"
    }
@@ -384,10 +411,14 @@ proc writeDocument {stream} {
 
 proc endDocument {{stream ""}} {
    global bible
+
+   addLine "</main>"
    addLine "<hr>"
+
    addSelectors
    addLine "</body>"
    addLine "</html>"
+
    if {[string length $stream] > 0} {
       writeDocument $stream
    } else {
@@ -397,6 +428,7 @@ proc endDocument {{stream ""}} {
       close $stream; unset stream
       refreshFile $bible(document,file,new) $bible(document,file,old) 0
    }
+
    unset bible(document,type)
 }
 

@@ -15,7 +15,7 @@ proc makeTestamentIndex {testamentName firstBook lastBook} {
    set width "[expr {100 / $columns}]%"
 
    addLine "<h3>[getTestamentTitle_$testamentName]</h3>"
-   addLine "<table>"
+   addLine "<table class=\"book-index\">"
 
    loop row 0 $rows {
       addLine "<tr>"

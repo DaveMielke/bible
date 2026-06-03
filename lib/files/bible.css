@@ -1,0 +1,55 @@
+table.book-index {
+  border-collapse: collapse;
+  width: auto;
+  table-layout: auto;
+}
+
+table.book-index td {
+  border: none;
+  padding: 0.5em;
+  text-align: left;
+}
+
+table.chapter-index {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table.chapter-index td {
+  border: none;
+  padding: 2em; /* Optional, for spacing */
+  vertical-align: top; /* Align content to the top */
+}
+
+table.chapter-index td:first-child {
+  text-align: right;
+  font-size: 1.5em;
+}
+
+table.navigation-bar {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid black; /* Outer border */
+}
+
+table.navigation-bar td {
+  border-left: none; /* Remove inner left borders */
+  border-right: none; /* Remove inner right borders */
+  padding: 0.5rem;
+}
+
+table.navigation-bar td:first-child {
+  border-left: 1px solid black; /* Add left border to the first cell */
+  text-align: left;
+}
+
+table.navigation-bar td:last-child {
+  border-right: 1px solid black; /* Add right border to the last cell */
+  text-align: right;
+}
+
+table.navigation-bar td:nth-child(2) {
+  text-align: center;
+}
+

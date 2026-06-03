@@ -9,23 +9,30 @@ processProgramArguments optionValues $optionDefinitions
 
 proc writeIndex {} {
    global indexLines chapterCount
+
    if {[info exists indexLines]} {
       if {$chapterCount > 0} {
 	 global currentBook bookIdentifier bookName bookTitle bookType
+
 	 set subtitle [getIndexTitle_$bookType]
 	 startDocument 1 [list $bookIdentifier] "$bookName - $subtitle" $bookTitle $subtitle
-	 addLine "<table cellspacing=\"5\">"
+	 addLine "<table class=\"chapter-index\">"
+
 	 set chapterNumber 0
 	 foreach verse1 $indexLines {
 	    addLine "<tr>"
-	    addLine "<td align=\"right\" valign=\"top\">"
-	    addLink "<font size=\"+3\">[incr chapterNumber]</font>" [getChapterUrl $currentBook $chapterNumber]
+
+	    addLine "<td>"
+	    addLink "[incr chapterNumber]" [getChapterUrl $currentBook $chapterNumber]
 	    addLine "</td>"
-	    addLine "<td align=\"left\" valign=\"top\">"
+
+	    addLine "<td>"
 	    addLine [regsub -all {<.*?>} $verse1 {}]
 	    addLine "</td>"
+
 	    addLine "</tr>"
 	 }
+
 	 addLine "</table>"
 	 endDocument
       }
