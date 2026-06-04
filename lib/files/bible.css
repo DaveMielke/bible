@@ -10,20 +10,20 @@ table.book-index td {
   text-align: left;
 }
 
-table.chapter-index {
+table.verse-table {
   border-collapse: collapse;
   width: 100%;
 }
 
-table.chapter-index td {
+table.verse-table td {
   border: none;
   padding: 2em; /* Optional, for spacing */
   vertical-align: top; /* Align content to the top */
 }
 
-table.chapter-index td:first-child {
+table.verse-table td:first-child {
   text-align: right;
-  font-size: 1.5em;
+  font-weight: bold;
 }
 
 table.navigation-bar {

@@ -16,7 +16,7 @@ proc writeIndex {} {
 
 	 set subtitle [getIndexTitle_$bookType]
 	 startDocument 1 [list $bookIdentifier] "$bookName - $subtitle" $bookTitle $subtitle
-	 addLine "<table class=\"chapter-index\">"
+	 addLine "<table class=\"verse-table\">"
 
 	 set chapterNumber 0
 	 foreach verse1 $indexLines {
@@ -43,6 +43,7 @@ proc writeChapter {} {
    global indexLines indexWords
 
    if {[documentStarted]} {
+      addLine "</table>"
       endDocument
 
       if {![cequal [cindex [lindex $indexWords end] end] .]} {
@@ -51,6 +52,13 @@ proc writeChapter {} {
 
       lappend indexLines [join $indexWords " "]
    }
+}
+
+proc addVerseRow {number text} {
+   addLine "<tr>"
+   addLine "<td>$number</td>"
+   addLine "<td>$text</td>"
+   addLine "</tr>"
 }
 
 loadBookDefinitions
@@ -105,8 +113,12 @@ forVerses {
    set verseWordCount [llength [set verseWords [split $verseText " "]]]
 
    if {$verseNumber == 0} {
-      set verseText "<em>$verseText</em>"
+      addLine "<h3>$verseText</h3>"
    } else {
+      if {$verseNumber == 1} {
+         addLine "<table class=\"verse-table\">"
+      }
+
       if {[set wordCount [expr {min($verseWordCount,$indexLimit-[llength $indexWords])}]] > 0} {
          lvarcat indexWords [lrange $verseWords 0 [expr {$wordCount - 1}]]
       }
@@ -116,22 +128,17 @@ forVerses {
 	    lvarpop chapterParagraphs
 
             if {$verseNumber != 1} {
-               addLine "<p>"
+               addVerseRow "&para;" ""
             }
 	 }
       }
 
-      set verseText "<strong>$verseNumber</strong> $verseText"
+      if {[clength $passageTitle] > 0} {
+         addVerseRow "" "<strong>$passageTitle</strong>"
+      }
+
+      addVerseRow "<span id=\"$verseNumber\">$verseNumber</span>" $verseText
    }
-
-   set verseText "<span id=\"$verseNumber\">$verseText</span>"
-   append verseText "<br>"
-
-   if {[clength $passageTitle] > 0} {
-      addLine "<h3>$passageTitle</h3>"
-   }
-
-   addLine $verseText
 }
 
 writeChapter
