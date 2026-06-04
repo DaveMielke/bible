@@ -208,7 +208,7 @@ proc getDocumentExtension {} {
    return .html
 }
 
-proc makeURL {components} {
+proc makeFileURL {components} {
    global bible
 
    set name [lvarpop components end]
@@ -242,7 +242,7 @@ proc getBookURL {index} {
    if {(($index < 0) || ($index >= $bible(book,count)))} {
       return ""
    }
-   return [makeURL [list "[getBookIdentifier [getBookKey $index]][getDocumentExtension]"]]
+   return [makeFileURL [list "[getBookIdentifier [getBookKey $index]][getDocumentExtension]"]]
 }
 
 proc getChapterName {chapter} {
@@ -258,7 +258,7 @@ proc getChapterURL {book chapter} {
    if {(($chapter < 1) || ($chapter > [getChapterCount $book]))} {
       return ""
    }
-   return [makeURL [list [getBookIdentifier $book] "[getChapterName $chapter][getDocumentExtension]"]]
+   return [makeFileURL [list [getBookIdentifier $book] "[getChapterName $chapter][getDocumentExtension]"]]
 }
 
 proc markDocument {} {
@@ -280,13 +280,15 @@ proc addLine {line} {
    lappend bible(document,lines) $line
 }
 
-proc addLink {text url {image ""}} {
+proc addFileReference {text url {image ""}} {
    if {[clength $image] > 0} {
-      set text "<img src=\"[makeURL [list $image]]\" alt=\"$text\">"
+      set text "<img src=\"[makeFileURL [list $image]]\" alt=\"$text\">"
    }
+
    if {[clength $url] > 0} {
       set text "<a href=\"$url\">$text</a>"
    }
+
    addLine $text
 }
 
@@ -294,9 +296,9 @@ proc addNavigationBar {} {
    global bible
 
    set previousBook ""
-   set bookIndex [makeURL [list "index[getDocumentExtension]"]]
+   set bookIndex [makeFileURL [list "index[getDocumentExtension]"]]
    set nextBook ""
-   set searchForm [makeURL [list "search[getDocumentExtension]"]]
+   set searchForm [makeFileURL [list "search[getDocumentExtension]"]]
    set previousChapter ""
    set chapterIndex ""
    set nextChapter ""
@@ -323,29 +325,23 @@ proc addNavigationBar {} {
 
    addLine "<td>"
    if {[clength $bookIndex] > 0} {
-      addLink [getLabel_previousBook] $previousBook "LeftArrow.gif"
-      addLink [getLabel_bookIndex] $bookIndex
-      addLink [getLabel_nextBook] $nextBook "RightArrow.gif"
-   } else {
-      addLine "&nbsp\;"
+      addFileReference [getLabel_previousBook] $previousBook "LeftArrow.gif"
+      addFileReference [getLabel_bookIndex] $bookIndex
+      addFileReference [getLabel_nextBook] $nextBook "RightArrow.gif"
    }
    addLine "</td>"
 
    addLine "<td>"
    if {[clength $searchForm] > 0} {
-      addLink [getLabel_search] $searchForm
-   } else {
-      addLine "&nbsp\;"
+      addFileReference [getLabel_search] $searchForm
    }
    addLine "</td>"
 
    addLine "<td>"
    if {[clength $chapterIndex] > 0} {
-      addLink [getLabel_previousChapter] $previousChapter "LeftArrow.gif"
-      addLink [getLabel_chapterIndex] $chapterIndex
-      addLink [getLabel_nextChapter] $nextChapter "RightArrow.gif"
-   } else {
-      addLine "&nbsp\;"
+      addFileReference [getLabel_previousChapter] $previousChapter "LeftArrow.gif"
+      addFileReference [getLabel_chapterIndex] $chapterIndex
+      addFileReference [getLabel_nextChapter] $nextChapter "RightArrow.gif"
    }
    addLine "</td>"
 
@@ -375,7 +371,7 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    addLine "<head>"
    addLine "<meta charset=\"[string toupper [getOutputEncoding]]\">"
    addLine "<meta name=\"description\" content=\"Accessible Bible - $bible(VERSION) ($bible(title)) - $title\">"
-   addLine "<link rel=\"stylesheet\" href=\"[makeURL [list bible.css]]\">"
+   addLine "<link rel=\"stylesheet\" href=\"[makeFileURL [list bible.css]]\">"
    addLine "<title>[getGeneralTitle] - $bible(title) - $title</title>"
    addLine "</head>"
 

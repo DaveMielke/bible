@@ -23,7 +23,7 @@ proc makeTestamentIndex {testamentName firstBook lastBook} {
       loop column 0 $columns {
          if {[clength [set key [lindex $keys [expr {($column * $rows) + $row}]]]] > 0} {
             addLine "<td>"
-            addLink [getBookName $key] [getBookURL [getBookIndex $key]]
+            addFileReference [getBookName $key] [getBookURL [getBookIndex $key]]
             addLine "</td>"
          }
       }
