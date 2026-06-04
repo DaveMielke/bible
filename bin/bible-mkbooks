@@ -38,24 +38,32 @@ proc writeIndex {} {
       }
    }
 }
+
 proc writeChapter {} {
    global indexLines indexWords
+
    if {[documentStarted]} {
       endDocument
+
       if {![cequal [cindex [lindex $indexWords end] end] .]} {
          lappend indexWords "[lvarpop indexWords end] ..."
       }
+
       lappend indexLines [join $indexWords " "]
    }
 }
+
 loadBookDefinitions
 set currentBook ""
 set currentChapter ""
+
 forVerses {
    set nextBook $bookKey
    set nextChapter $chapterNumber
+
    if {!(($nextBook == $currentBook) && ($nextChapter == $currentChapter))} {
       writeChapter
+
       if {$nextBook != $currentBook} {
 	 writeIndex
 	 set currentBook $nextBook
@@ -68,50 +76,64 @@ forVerses {
 	 set bookType [getBookType $bookKey]
          set isPsalm [string equal $bookType psalm]
       }
+
       set currentChapter $nextChapter
       set indexWords {}
       set chapterParagraphs [lvarpop bookParagraphs]
       set documentTitle $bookName
       set documentPath [list $bookIdentifier]
+
       if {$chapterCount > 0} {
 	 lappend documentPath [getChapterName $chapterNumber]
+
 	 if {$isPsalm} {
 	    set documentTitle ""
 	 } else {
 	    append documentTitle " - "
 	 }
+
          append documentTitle [set chapterTitle [getChapterTitle_$bookType $chapterNumber]]
       } else {
          set chapterTitle ""
       }
+
       startDocument 2 $documentPath $documentTitle $bookTitle $chapterTitle
    }
+
    regsub { +} [set verseText [string trim $verseText]] { } verseText
    htmlizeVerseText verseText
    set verseWordCount [llength [set verseWords [split $verseText " "]]]
+
    if {$verseNumber == 0} {
       set verseText "<em>$verseText</em>"
    } else {
       if {[set wordCount [expr {min($verseWordCount,$indexLimit-[llength $indexWords])}]] > 0} {
          lvarcat indexWords [lrange $verseWords 0 [expr {$wordCount - 1}]]
       }
+
       if {![lempty $chapterParagraphs]} {
          if {$verseNumber == [lindex $chapterParagraphs 0]} {
 	    lvarpop chapterParagraphs
+
             if {$verseNumber != 1} {
                addLine "<p>"
             }
 	 }
       }
+
       set verseText "<strong>$verseNumber</strong> $verseText"
    }
+
    set verseText "<span id=\"$verseNumber\">$verseText</span>"
    append verseText "<br>"
+
    if {[clength $passageTitle] > 0} {
       addLine "<h3>$passageTitle</h3>"
    }
+
    addLine $verseText
 }
+
 writeChapter
 writeIndex
 exit 0
