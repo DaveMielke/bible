@@ -2,7 +2,7 @@
 source [file join [file dirname $argv0] .. lib bible.tcl]
 
 set optionDefinitions {
-   {force flag "(re)create the index even if it already exists"}
+   {force flag "recreate the index"}
 }
 
 processProgramArguments optionValues $optionDefinitions
@@ -11,20 +11,22 @@ set indexDirectory [getGlimpseDirectory]
 set indexFile [file join $indexDirectory .glimpse_index]
 set filePermissions 0o644
 
-if {!$optionValues(force)} {
-   if {[file exists $indexFile]} {
-      logDetail "index already created"
-      exit 0
-   }
+if {![file exists $indexFile]} {
+   set action creating
+} elseif {$optionValues(force)} {
+   set action recreating
+} else {
+   logDetail "index already created: $indexFile"
+   exit 0
 }
 
-logNote "creating index"
+logNote "$action index: $indexFile"
 file mkdir $indexDirectory
 
 try {
    exec <@ stdin glimpseindex -o -B -H $indexDirectory [getVersesFile] >@ stdout 2>@ stderr
 } on error {message} {
-   logError $message
+   internalError $message
 }
 
 foreach fileName [glob -directory $indexDirectory ".glimpse_*"] {
