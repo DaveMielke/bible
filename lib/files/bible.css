@@ -27,13 +27,15 @@ table.chapter-index td:first-child {
 }
 
 table.navigation-bar {
+  width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  width: 100%;
   border: 1px solid black; /* Outer border */
 }
 
 table.navigation-bar td {
+  width: 1fr;
+  text-align: center;
   border-left: none; /* Remove inner left borders */
   border-right: none; /* Remove inner right borders */
   padding: 0.5rem;
@@ -41,15 +43,9 @@ table.navigation-bar td {
 
 table.navigation-bar td:first-child {
   border-left: 1px solid black; /* Add left border to the first cell */
-  text-align: left;
 }
 
 table.navigation-bar td:last-child {
   border-right: 1px solid black; /* Add right border to the last cell */
-  text-align: right;
-}
-
-table.navigation-bar td:nth-child(2) {
-  text-align: center;
 }
 
