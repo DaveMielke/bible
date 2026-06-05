@@ -24,8 +24,8 @@ logNote "$action index: $indexFile"
 file mkdir $indexDirectory
 
 try {
-   exec <@ stdin glimpseindex -o -B -H $indexDirectory [getVersesFile] >@ stdout 2>@ stderr
-} on error {message} {
+   set output [exec << "" glimpseindex -o -B -H $indexDirectory [getVersesFile] 2>@ stderr]
+} trap {POSIX} {message} {
    internalError $message
 }
 
