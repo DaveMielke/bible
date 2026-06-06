@@ -1,13 +1,11 @@
 #!/bin/sh
 . brltty-prologue.sh
 parseProgramArguments "${@}"
-
 set -e
-cd "${programDirectory}"
 
 for action in vars files index books search glimpse
 do
-   "./bible-mk${action}"
+   "${programDirectory}/bible-mk${action}" -v
 done
 
 exit 0
