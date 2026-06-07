@@ -7,12 +7,15 @@ set optionDefinitions {
 
 processProgramArguments optionValues $optionDefinitions
 
+set versesFile [getVersesFile]
 set indexDirectory [getGlimpseDirectory]
 set indexFile [file join $indexDirectory .glimpse_index]
-set filePermissions 0o644
+set indexPermissions 0o644
 
 if {![file exists $indexFile]} {
    set action creating
+} elseif {[file mtime $versesFile] > [file mtime $indexFile]} {
+   set action updating
 } elseif {$optionValues(force)} {
    set action recreating
 } else {
@@ -24,13 +27,13 @@ logNote "$action index: $indexFile"
 file mkdir $indexDirectory
 
 try {
-   set output [exec << "" glimpseindex -o -B -H $indexDirectory [getVersesFile] 2>@ stderr]
+   set output [exec << "" glimpseindex -o -B -H $indexDirectory $versesFile 2>@ stderr]
 } trap {POSIX} {message} {
    internalError $message
 }
 
 foreach fileName [glob -directory $indexDirectory ".glimpse_*"] {
-   file attributes $fileName -permissions $filePermissions
+   file attributes $fileName -permissions $indexPermissions
 }
 
 exit 0
