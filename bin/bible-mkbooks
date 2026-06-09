@@ -97,7 +97,7 @@ forVerses {
 	 if {$isPsalm} {
 	    set documentTitle ""
 	 } else {
-	    append documentTitle " - "
+	    append documentTitle ", "
 	 }
 
          append documentTitle [set chapterTitle [getChapterTitle_$bookType $chapterNumber]]
@@ -113,7 +113,7 @@ forVerses {
    set verseWordCount [llength [set verseWords [split $verseText " "]]]
 
    if {$verseNumber == 0} {
-      addLine "<h3>$verseText</h3>"
+      addLine "<header class=\"superscription\"><p>$verseText</p></header>"
    } else {
       if {$verseNumber == 1} {
          addLine "<table class=\"verse-table\">"

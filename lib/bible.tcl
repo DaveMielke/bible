@@ -370,9 +370,9 @@ proc startDocument {type path title primaryHeader {secondaryHeader ""}} {
    addLine "<html lang=\"$bible(language)\">"
    addLine "<head>"
    addLine "<meta charset=\"[string toupper [getOutputEncoding]]\">"
-   addLine "<meta name=\"description\" content=\"$title - Accessible edition of the $bible(VERSION) ([getGeneralTitle], $bible(title)) with straightforward navigation for all users.\">"
    addLine "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
    addLine "<link rel=\"stylesheet\" href=\"[makeFileURL [list bible.css]]\">"
+   addLine "<meta name=\"description\" content=\"$title - Accessible Edition of the $bible(VERSION) ([getGeneralTitle], $bible(title)) with Straightforward Navigation for All Users\">"
    addLine "<title>[getGeneralTitle] - $bible(title) - $title</title>"
    addLine "</head>"
 
