@@ -94,150 +94,148 @@ if {[lempty $argv]} {
       addLine "</select>"
    }
 
-   startBasicDocument search.cgi [getResultsTitle]
-
    setResultsSubstitutions substitutions
    set caseSensitive [lindex $caseKeywords 0]
    set selectionMode [lindex $modeKeywords 0]
    set resultStyle [lindex $styleKeywords 0]
    set spellingErrors $errorsMinimum
+   cgi_input
 
-   cgi_eval {
-      cgi_content_type "text/html"
-      cgi_input
+   startBasicDocument search.cgi [getResultsTitle]
+   cgi_content_type "text/html"
 
-      if {![cgiImport data ""]} {
-	 lappend problems $substitutions(input.empty)
-      } else {
-	 set wordList [split $data]
-      }
-
-      cgiImport style [lindex $styleKeywords 0]
-      if {[set styleIndex [lsearch -exact $styleKeywords $style]] < 0} {
-	 lappend problems $substitutions(style.problem)
-      } else {
-	 set resultStyle [lindex $styleKeywords $styleIndex]
-      }
-
-      cgiImport mode [lindex $modeKeywords 0]
-      if {[set modeIndex [lsearch -exact $modeKeywords $mode]] < 0} {
-	 lappend problems $substitutions(mode.problem)
-      } else {
-	 set selectionMode [lindex $modeKeywords $modeIndex]
-      }
-
-      cgiImport case [lindex $caseKeywords 0]
-      if {[set caseIndex [lsearch -exact $caseKeywords $case]] < 0} {
-	 lappend problems $substitutions(case.problem)
-      } else {
-	 set caseSensitive $caseIndex
-      }
-
-      cgiImport errors $errorsMinimum
-      if {![testInteger $errors $errorsMinimum $errorsMaximum]} {
-	 lappend problems $substitutions(errors.problem)
-      } else {
-	 set spellingErrors $errors
-      }
-
-      if {[info exists problems]} {
-	 addLine $substitutions(statement.problem)
-	 addLine "<ul>"
-	 foreach problem $problems {
-	    addLine "<li>$problem"
-	 }
-	 addLine "</ul>"
-      } else {
-	 addLine "<form method=\"get\" action=\"search.cgi\">"
-	 addLine "<input name=\"data\" type=\"text\" value=\"$data\" size=\"40\">"
-	 addLine "<input type=\"submit\" value=\"$substitutions(label.search)\">"
-	 addLine "<ul>"
-	 addLine "<li>"
-	 addMenu style $style $styleKeywords [list $substitutions(style.verses) $substitutions(style.refs)]
-	 addLine "<li>"
-	 addMenu mode $mode $modeKeywords [list $substitutions(mode.every) $substitutions(mode.any) $substitutions(mode.phrase)]
-	 addLine "<li>"
-	 addMenu case $case $caseKeywords [list $substitutions(case.ignore) $substitutions(case.respect)]
-	 addLine "<li>"
-         for {set i $errorsMinimum} {$i <= $errorsMaximum} {incr i} {
-            lappend internalErrorsList $i
-            lappend externalErrorsList [getResults_errorsLimit $i]
-         }
-	 addMenu errors $errors $internalErrorsList $externalErrorsList
-	 addLine "</ul>"
-	 addLine "</form>"
-	 set countMark [markDocument]
-	 set verseCount 0
-         switch -exact $resultStyle {
-            verses {
-               findVerses {
-                  if {[incr verseCount] == 1} {
-                     addLine "<dl>"
-                  }
-                  htmlizeVerseText verseText
-                  set url [getBookIdentifier $bookKey]
-                  set link "[getBookName $bookKey] "
-                  if {[getChapterCount $bookKey] > 0} {
-                     append url "/[getChapterName $chapterNumber]"
-                     append link "$chapterNumber:"
-                  }
-                  append url ".html#$verseNumber"
-                  append link $verseNumber
-                  addLine "<dt><a href=\"$url\">$link</a><dd>$verseText"
-               }
-               if {$verseCount > 0} {
-                  addLine "</dl>"
-               }
-            }
-            refs {
-               set currentBook ""
-               findVerses {
-                  if {[incr verseCount] == 1} {
-                     addLine "<dl>"
-                  }
-                  if {![cequal $bookKey $currentBook]} {
-                     if {[clength $currentBook] > 0} {
-                        addLine $refs
-                     }
-                     set currentBook $bookKey
-                     set currentChapter ""
-                     addLine "<dt>[getBookName $bookKey]<dd>"
-                     set refs ""
-                     set urlPrefix [getBookIdentifier $bookKey]
-                  }
-                  set url $urlPrefix
-                  set refPrefix ""
-                  set sameChapter 0
-                  if {[getChapterCount $bookKey] > 0} {
-                     append url "/[getChapterName $chapterNumber]"
-                     if {[cequal $chapterNumber $currentChapter]} {
-                        set sameChapter 1
-                     } else {
-                        set currentChapter $chapterNumber
-                        set refPrefix "$chapterNumber:"
-                     }
-                  }
-                  append url ".html#$verseNumber"
-                  if {$sameChapter} {
-                     append refs ","
-                  } elseif {[clength $refs] > 0} {
-                     append refs " "
-                  }
-                  append refs "$refPrefix<a href=\"$url\">$verseNumber</a>"
-               }
-               if {$verseCount > 0} {
-                  addLine $refs
-                  addLine "</dl>"
-               }
-            }
-         }
-         if {$verseCount > 0} {
-            addLine $substitutions(statement.end)
-         }
-         insertLine $countMark "<h3>[getResults_versesFound $verseCount]</h3>"
-         addSearchHelpParagraph
-      }
+   if {![cgiImport data ""]} {
+      lappend problems $substitutions(input.empty)
+   } else {
+      set wordList [split $data]
    }
+
+   cgiImport style [lindex $styleKeywords 0]
+   if {[set styleIndex [lsearch -exact $styleKeywords $style]] < 0} {
+      lappend problems $substitutions(style.problem)
+   } else {
+      set resultStyle [lindex $styleKeywords $styleIndex]
+   }
+
+   cgiImport mode [lindex $modeKeywords 0]
+   if {[set modeIndex [lsearch -exact $modeKeywords $mode]] < 0} {
+      lappend problems $substitutions(mode.problem)
+   } else {
+      set selectionMode [lindex $modeKeywords $modeIndex]
+   }
+
+   cgiImport case [lindex $caseKeywords 0]
+   if {[set caseIndex [lsearch -exact $caseKeywords $case]] < 0} {
+      lappend problems $substitutions(case.problem)
+   } else {
+      set caseSensitive $caseIndex
+   }
+
+   cgiImport errors $errorsMinimum
+   if {![testInteger $errors $errorsMinimum $errorsMaximum]} {
+      lappend problems $substitutions(errors.problem)
+   } else {
+      set spellingErrors $errors
+   }
+
+   if {[info exists problems]} {
+      addLine $substitutions(statement.problem)
+      addLine "<ul>"
+      foreach problem $problems {
+         addLine "<li>$problem"
+      }
+      addLine "</ul>"
+   } else {
+      addLine "<form method=\"get\" action=\"search.cgi\">"
+      addLine "<input name=\"data\" type=\"text\" value=\"$data\" size=\"40\">"
+      addLine "<input type=\"submit\" value=\"$substitutions(label.search)\">"
+      addLine "<ul>"
+      addLine "<li>"
+      addMenu style $style $styleKeywords [list $substitutions(style.verses) $substitutions(style.refs)]
+      addLine "<li>"
+      addMenu mode $mode $modeKeywords [list $substitutions(mode.every) $substitutions(mode.any) $substitutions(mode.phrase)]
+      addLine "<li>"
+      addMenu case $case $caseKeywords [list $substitutions(case.ignore) $substitutions(case.respect)]
+      addLine "<li>"
+      for {set i $errorsMinimum} {$i <= $errorsMaximum} {incr i} {
+         lappend internalErrorsList $i
+         lappend externalErrorsList [getResults_errorsLimit $i]
+      }
+      addMenu errors $errors $internalErrorsList $externalErrorsList
+      addLine "</ul>"
+      addLine "</form>"
+      set countMark [markDocument]
+      set verseCount 0
+      switch -exact $resultStyle {
+         verses {
+            findVerses {
+               if {[incr verseCount] == 1} {
+                  addLine "<dl>"
+               }
+               htmlizeVerseText verseText
+               set url [getBookIdentifier $bookKey]
+               set link "[getBookName $bookKey] "
+               if {[getChapterCount $bookKey] > 0} {
+                  append url "/[getChapterName $chapterNumber]"
+                  append link "$chapterNumber:"
+               }
+               append url ".html#$verseNumber"
+               append link $verseNumber
+               addLine "<dt><a href=\"$url\">$link</a><dd>$verseText"
+            }
+            if {$verseCount > 0} {
+               addLine "</dl>"
+            }
+         }
+         refs {
+            set currentBook ""
+            findVerses {
+               if {[incr verseCount] == 1} {
+                  addLine "<dl>"
+               }
+               if {![cequal $bookKey $currentBook]} {
+                  if {[clength $currentBook] > 0} {
+                     addLine $refs
+                  }
+                  set currentBook $bookKey
+                  set currentChapter ""
+                  addLine "<dt>[getBookName $bookKey]<dd>"
+                  set refs ""
+                  set urlPrefix [getBookIdentifier $bookKey]
+               }
+               set url $urlPrefix
+               set refPrefix ""
+               set sameChapter 0
+               if {[getChapterCount $bookKey] > 0} {
+                  append url "/[getChapterName $chapterNumber]"
+                  if {[cequal $chapterNumber $currentChapter]} {
+                     set sameChapter 1
+                  } else {
+                     set currentChapter $chapterNumber
+                     set refPrefix "$chapterNumber:"
+                  }
+               }
+               append url ".html#$verseNumber"
+               if {$sameChapter} {
+                  append refs ","
+               } elseif {[clength $refs] > 0} {
+                  append refs " "
+               }
+               append refs "$refPrefix<a href=\"$url\">$verseNumber</a>"
+            }
+            if {$verseCount > 0} {
+               addLine $refs
+               addLine "</dl>"
+            }
+         }
+      }
+      if {$verseCount > 0} {
+         addLine $substitutions(statement.end)
+      }
+      insertLine $countMark "<h3>[getResults_versesFound $verseCount]</h3>"
+      addSearchHelpParagraph
+   }
+
    endDocument stdout
 } else {
    proc getArgumentsUsageSummary {} {

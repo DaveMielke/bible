@@ -80,12 +80,18 @@ if {[lempty $argv]} {
       cgi_redirect [makeServerURL]
    }
 } else {
+   proc getArgumentsUsageSummary {} {
+      set lines [list]
+      lappend lines "If no arguments (neither options nor parameters) are specified then the Strong's Results web page is generated."
+      return $lines
+   }
+
    set optionDefinitions {
    }
 
    addKeywordOption optionDefinitions lexicon "which lexicon to use" $lexiconKeywords
    addKeywordOption optionDefinitions server "the Strong's server to use" $serverKeywords
-   processProgramArguments optionValues $optionDefinitions positionalArguments "word-number"
+   processProgramArguments optionValues $optionDefinitions positionalArguments "word-number" getArgumentsUsageSummary
 
    verifyKeywordOption optionValues(lexicon) lexicon $lexiconKeywords
    set strongsLexicon $optionValues(lexicon)
