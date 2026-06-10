@@ -67,19 +67,7 @@ set errorsMinimum 0
 set errorsMaximum 8
 
 if {[lempty $argv]} {
-   source [file join [getLibraryDirectory] "cgi.tcl"]
-
-   proc cgiImport {parameter {default ""}} {
-      upvar 1 $parameter $parameter
-
-      if {[catch [list cgi_import $parameter] response] == 0} {
-         set $parameter [string trim [set $parameter]]
-         return 1
-      }
-
-      set $parameter $default
-      return 0
-   }
+   cgiScript
 
    proc addMenu {name value internalList externalList} {
       addLine "<select name=\"$name\">"

@@ -469,6 +469,26 @@ proc loadHooks {directory} {
    return $ok
 }
 
+proc cgiScript {} {
+   uplevel #0 {
+      source [file join [getLibraryDirectory] "cgi.tcl"]
+   }
+
+   proc cgiImport {parameter {default ""}} {
+      upvar 1 $parameter $parameter
+
+      try {
+         cgi_import $parameter
+      } on error {} {
+         set $parameter $default
+         return 0
+      }
+
+      set $parameter [string trim [set $parameter]]
+      return 1
+   }
+}
+
 proc prepareEnvironment {} {
    global bible argv0 env
    set bible(root) [file dirname [file dirname [file normalize $argv0]]]

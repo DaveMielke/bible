@@ -25,22 +25,9 @@ set numberMinimum 1
 set serverKeywords {biblehub studybible}
 
 if {[lempty $argv]} {
-   source [file join [getLibraryDirectory] "cgi.tcl"]
-
-   proc cgiImport {parameter {default ""}} {
-      upvar 1 $parameter $parameter
-
-      if {[catch [list cgi_import $parameter] response] == 0} {
-         set $parameter [string trim [set $parameter]]
-         return 1
-      }
-
-      set $parameter $default
-      return 0
-   }
-
-   setStrongsSubstitutions substitutions
+   cgiScript
    cgi_input
+   setStrongsSubstitutions substitutions
 
    cgiImport lexicon [lindex $lexiconKeywords 0]
    if {[set lexiconIndex [lsearch -exact $lexiconKeywords $lexicon]] < 0} {
