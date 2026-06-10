@@ -299,6 +299,7 @@ proc addNavigationBar {} {
    set bookIndex [makeFileURL [list "index[getDocumentExtension]"]]
    set nextBook ""
    set searchForm [makeFileURL [list "search[getDocumentExtension]"]]
+   set strongsForm [makeFileURL [list "strongs[getDocumentExtension]"]]
    set previousChapter ""
    set chapterIndex ""
    set nextChapter ""
@@ -334,6 +335,9 @@ proc addNavigationBar {} {
    addLine "<td>"
    if {[clength $searchForm] > 0} {
       addFileReference [getLabel_search] $searchForm
+   }
+   if {[clength $strongsForm] > 0} {
+      addFileReference [getLabel_strongs] $strongsForm
    }
    addLine "</td>"
 
