@@ -63,6 +63,7 @@ proc getLabel_search {} {
 proc getSearchTitle {} {
    return "Find Verses"
 }
+
 proc setSearchSubstitutions {substitutionsArray} {
    upvar 1 $substitutionsArray substitutions
 
@@ -99,6 +100,7 @@ proc setSearchSubstitutions {substitutionsArray} {
 proc getResultsTitle {} {
    return "Search Results"
 }
+
 proc setResultsSubstitutions {substitutionsArray} {
    upvar 1 $substitutionsArray substitutions
 
@@ -124,6 +126,7 @@ proc setResultsSubstitutions {substitutionsArray} {
    set substitutions(style.verses) "Show verses"
    set substitutions(style.refs) "Show references"
 }
+
 proc getResults_errorsLimit {count} {
    if {$count == 0} {
       return "don't allow any spelling errors"
@@ -133,6 +136,7 @@ proc getResults_errorsLimit {count} {
    }
    return "allow $count spelling errors"
 }
+
 proc getResults_versesFound {count} {
    if {$count == 0} {
       return "No verses were found."
@@ -143,6 +147,19 @@ proc getResults_versesFound {count} {
       set phrase "verses were"
    }
    return "$count $phrase found."
+}
+
+proc getLabel_strongs {} {
+   return "Strong's"
+}
+
+proc getStrongsTitle {} {
+   return "Strong's Lookup"
+}
+
+proc setStrongsSubstitutions {substitutionsArray} {
+   upvar 1 $substitutionsArray substitutions
+
 }
 
 proc getOrdinalPhrase {position object} {

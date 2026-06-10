@@ -1,10 +1,10 @@
 export BIBLE_VERSION = kjv
 BTF_DIRECTORY = btf
 
-web: vars files books index search glimpse
+web: vars files books index search strongs glimpse
 
-vars files books index search glimpse txt brf:
-	bin/bible-mk$@
+vars files books index search strongs glimpse txt brf:
+	bin/bible-mk$@ -v
 
 btf-directory:
 	mkdir -p $(BTF_DIRECTORY)

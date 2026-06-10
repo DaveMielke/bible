@@ -3,7 +3,7 @@
 parseProgramArguments "${@}"
 set -e
 
-for action in vars files index books search glimpse
+for action in vars files index books search strongs glimpse
 do
    "${programDirectory}/bible-mk${action}" -v
 done

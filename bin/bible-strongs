@@ -1,0 +1,38 @@
+#!/usr/bin/env tclsh
+source [file join [file dirname $argv0] .. lib bible.tcl]
+loadBookDefinitions
+
+set lexiconKeywords {hebrew greek}
+
+if {[lempty $argv]} {
+   source [file join [getLibraryDirectory] "cgi.tcl"]
+
+   proc cgiImport {parameter {default ""}} {
+      upvar 1 $parameter $parameter
+
+      if {[catch [list cgi_import $parameter] response] == 0} {
+         set $parameter [string trim [set $parameter]]
+         return 1
+      }
+
+      set $parameter $default
+      return 0
+   }
+
+   startBasicDocument strongs.cgi [getStrongsTitle]
+   setStrongsultsSubstitutions substitutions
+
+   cgi_eval {
+      cgi_content_type "text/html"
+      cgi_input
+   }
+
+   endDocument stdout
+} else {
+   set optionDefinitions {
+   }
+
+   processProgramArguments optionValues $optionDefinitions
+}
+
+exit 0
