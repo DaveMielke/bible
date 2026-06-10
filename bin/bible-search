@@ -69,19 +69,6 @@ set errorsMaximum 8
 if {[lempty $argv]} {
    cgiScript
 
-   proc addMenu {name value internalList externalList} {
-      addLine "<select name=\"$name\">"
-      foreach internal $internalList external $externalList {
-         if {[cequal $internal $value]} {
-            set selected " SELECTED"
-         } else {
-            set selected ""
-         }
-         addLine "<option value=\"$internal\"$selected>$external"
-      }
-      addLine "</select>"
-   }
-
    setResultsSubstitutions substitutions
    set caseSensitive [lindex $caseKeywords 0]
    set selectionMode [lindex $modeKeywords 0]
@@ -139,17 +126,17 @@ if {[lempty $argv]} {
       addLine "<input type=\"submit\" value=\"$substitutions(label.search)\">"
       addLine "<ul>"
       addLine "<li>"
-      addMenu style $style $styleKeywords [list $substitutions(style.verses) $substitutions(style.refs)]
+      addSelector style $style $styleKeywords [list $substitutions(style.verses) $substitutions(style.refs)]
       addLine "<li>"
-      addMenu mode $mode $modeKeywords [list $substitutions(mode.every) $substitutions(mode.any) $substitutions(mode.phrase)]
+      addSelector mode $mode $modeKeywords [list $substitutions(mode.every) $substitutions(mode.any) $substitutions(mode.phrase)]
       addLine "<li>"
-      addMenu case $case $caseKeywords [list $substitutions(case.ignore) $substitutions(case.respect)]
+      addSelector case $case $caseKeywords [list $substitutions(case.ignore) $substitutions(case.respect)]
       addLine "<li>"
       for {set i $errorsMinimum} {$i <= $errorsMaximum} {incr i} {
          lappend internalErrorsList $i
          lappend externalErrorsList [getResults_errorsLimit $i]
       }
-      addMenu errors $errors $internalErrorsList $externalErrorsList
+      addSelector errors $errors $internalErrorsList $externalErrorsList
       addLine "</ul>"
       addLine "</form>"
       set countMark [markDocument]

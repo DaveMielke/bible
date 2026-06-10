@@ -438,6 +438,22 @@ proc documentStarted {} {
    return [info exists bible(document,type)]
 }
 
+proc addSelector {name value internalList externalList} {
+   addLine "<select name=\"$name\">"
+
+   foreach internal $internalList external $externalList {
+      if {[cequal $internal $value]} {
+         set selected " selected"
+      } else {
+         set selected ""
+      }
+
+      addLine "<option value=\"$internal\"$selected>$external"
+   }
+
+   addLine "</select>"
+}
+
 proc includeFile {path {substitutionsArray ""}} {
    set map [list]
    if {[string length $substitutionsArray] > 0} {
