@@ -20,11 +20,40 @@ if {[lempty $argv]} {
    }
 
    startBasicDocument strongs.cgi [getStrongsTitle]
-   setStrongsultsSubstitutions substitutions
+   setStrongsSubstitutions substitutions
 
    cgi_eval {
       cgi_content_type "text/html"
       cgi_input
+
+      cgiImport lexicon [lindex $lexiconKeywords 0]
+      if {[set lexiconIndex [lsearch -exact $lexiconKeywords $lexicon]] < 0} {
+	 lappend problems $substitutions(problem.lexicon)
+      } else {
+	 set strongsLexicon [lindex $lexiconKeywords $lexiconIndex]
+      }
+
+      cgiImport number 
+      if {![testInteger $number 1]} {
+	 lappend problems $substitutions(problem.number)
+      } else {
+	 set strongsNumber $number
+      }
+
+      if {[info exists problems]} {
+	 addLine $substitutions(problem.statement)
+	 addLine "<ul>"
+
+	 foreach problem $problems {
+	    addLine "<li>$problem"
+	 }
+
+	 addLine "</ul>"
+      } else {
+         set url "https://biblehub.com/$strongsLexicon/$strongsNumber.htm"
+         addLine "<p>Redirecting to: $url</p>"
+         cgi_redirect $url
+      }
    }
 
    endDocument stdout

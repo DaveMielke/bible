@@ -154,12 +154,22 @@ proc getLabel_strongs {} {
 }
 
 proc getStrongsTitle {} {
-   return "Strong's Lookup"
+   return "Strong's Concordance Lookup"
 }
 
 proc setStrongsSubstitutions {substitutionsArray} {
    upvar 1 $substitutionsArray substitutions
+   set substitutions(problem.statement) "The Strong's form has been filled out incorrectly."
 
+   set substitutions(label.lexicon) "Lexicon"
+   set substitutions(problem.lexicon) "An invalid lexicon name has been specified."
+   set substitutions(lexicon.hebrew) "Hebrew"
+   set substitutions(lexicon.greek) "Greek"
+
+   set substitutions(label.number) "Number"
+   set substitutions(problem.number) "An invalid word number has been specified."
+
+   set substitutions(label.submit) "Lookup"
 }
 
 proc getOrdinalPhrase {position object} {
