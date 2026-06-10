@@ -169,6 +169,11 @@ proc setStrongsSubstitutions {substitutionsArray} {
    set substitutions(label.number) "Number"
    set substitutions(problem.number) "An invalid word number has been specified."
 
+   set substitutions(label.server) "Server"
+   set substitutions(problem.server) "An invalid server name has been specified."
+   set substitutions(server.biblehub) "Bible Hub"
+   set substitutions(server.studybible) "Study Bible"
+
    set substitutions(label.submit) "Lookup"
 }
 

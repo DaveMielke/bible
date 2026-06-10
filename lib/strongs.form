@@ -9,6 +9,12 @@
   <input type="text" name="number" size="7" maxlength="4" id="numberText">
   <div class="form-error" id="numberError"></div>
 
+  <br><span class="form-label">@label.server@:</span>
+  <select name="server" id="serverSelector">
+  <option value="biblehub" selected>@server.biblehub@
+  <option value="studybible">@server.studybible@
+  </select>
+
   <br><input type="submit" value="@label.submit@" id="submitButton">
 </form>
 

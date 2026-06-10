@@ -2,7 +2,27 @@
 source [file join [file dirname $argv0] .. lib bible.tcl]
 loadBookDefinitions
 
+proc makeServerURL {} {
+   global strongsLexicon strongsNumber strongsServer
+
+   switch -exact $strongsServer {
+      biblehub {
+         return "https://bibleHub.com/$strongsLexicon/$strongsNumber.htm"
+      }
+
+      studybible {
+         return "https://studyBible.info/strongs/[string toupper [string index $strongsLexicon 0]]$strongsNumber"
+      }
+
+      default {
+         internalError "unexpected Strong's server: $strongsServer"
+      }
+   }
+}
+
 set lexiconKeywords {hebrew greek}
+set numberMinimum 1
+set serverKeywords {biblehub studybible}
 
 if {[lempty $argv]} {
    source [file join [getLibraryDirectory] "cgi.tcl"]
@@ -19,49 +39,68 @@ if {[lempty $argv]} {
       return 0
    }
 
-   startBasicDocument strongs.cgi [getStrongsTitle]
    setStrongsSubstitutions substitutions
+   cgi_input
 
-   cgi_eval {
-      cgi_content_type "text/html"
-      cgi_input
-
-      cgiImport lexicon [lindex $lexiconKeywords 0]
-      if {[set lexiconIndex [lsearch -exact $lexiconKeywords $lexicon]] < 0} {
-	 lappend problems $substitutions(problem.lexicon)
-      } else {
-	 set strongsLexicon [lindex $lexiconKeywords $lexiconIndex]
-      }
-
-      cgiImport number 
-      if {![testInteger $number 1]} {
-	 lappend problems $substitutions(problem.number)
-      } else {
-	 set strongsNumber $number
-      }
-
-      if {[info exists problems]} {
-	 addLine $substitutions(problem.statement)
-	 addLine "<ul>"
-
-	 foreach problem $problems {
-	    addLine "<li>$problem"
-	 }
-
-	 addLine "</ul>"
-      } else {
-         set url "https://biblehub.com/$strongsLexicon/$strongsNumber.htm"
-         addLine "<p>Redirecting to: $url</p>"
-         cgi_redirect $url
-      }
+   cgiImport lexicon [lindex $lexiconKeywords 0]
+   if {[set lexiconIndex [lsearch -exact $lexiconKeywords $lexicon]] < 0} {
+      lappend problems $substitutions(problem.lexicon)
+   } else {
+      set strongsLexicon [lindex $lexiconKeywords $lexiconIndex]
    }
 
-   endDocument stdout
+   cgiImport number 
+   if {![testInteger $number $numberMinimum]} {
+      lappend problems $substitutions(problem.number)
+   } else {
+      set strongsNumber $number
+   }
+
+   cgiImport server [lindex $serverKeywords 0]
+   if {[set serverIndex [lsearch -exact $serverKeywords $server]] < 0} {
+      lappend problems $substitutions(problem.server)
+   } else {
+      set strongsServer [lindex $serverKeywords $serverIndex]
+   }
+
+   if {[info exists problems]} {
+      startBasicDocument strongs.cgi [getStrongsTitle]
+      cgi_content_type "text/html"
+
+      addLine $substitutions(problem.statement)
+      addLine "<ul>"
+
+      foreach problem $problems {
+         addLine "<li>$problem"
+      }
+
+      addLine "</ul>"
+      endDocument stdout
+   } else {
+      cgi_redirect [makeServerURL]
+   }
 } else {
    set optionDefinitions {
    }
 
-   processProgramArguments optionValues $optionDefinitions
+   addKeywordOption optionDefinitions lexicon "which lexicon to use" $lexiconKeywords
+   addKeywordOption optionDefinitions server "the Strong's server to use" $serverKeywords
+   processProgramArguments optionValues $optionDefinitions positionalArguments "word-number"
+
+   verifyKeywordOption optionValues(lexicon) lexicon $lexiconKeywords
+   set strongsLexicon $optionValues(lexicon)
+
+   verifyKeywordOption optionValues(server) server $serverKeywords
+   set strongsServer $optionValues(server)
+
+   if {[nextElement positionalArguments number]} {
+      verifyIntegerOption $number "word number" $numberMinimum
+      set strongsNumber $number
+   } else {
+      syntaxError "word number not specified"
+   }
+
+   puts stdout [makeServerURL]
 }
 
 exit 0
