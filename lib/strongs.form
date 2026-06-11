@@ -1,18 +1,22 @@
 <form method="get" action="strongs.cgi">
-  <br><span class="form-label">@label.lexicon@:</span>
+  <br><label for="lexiconSelector">@label.lexicon@:</label>
   <select name="lexicon" id="lexiconSelector">
-  <option value="hebrew" selected>@lexicon.hebrew@
-  <option value="greek">@lexicon.greek@
+  <option value="hebrew" selected>@lexicon.hebrew@</option>
+  <option value="greek">@lexicon.greek@</option>
   </select>
 
-  <br><span class="form-label">@label.number@:</span>
-  <input type="text" name="number" size="7" maxlength="4" id="numberText">
+  <br><label for="numberText">@label.number@:</label>
+  <input
+    name="number" id="numberText"
+    type="text" inputmode="numeric"
+    size="7" maxlength="4"
+  >
   <div class="form-error" id="numberError"></div>
 
-  <br><span class="form-label">@label.server@:</span>
+  <br><label for="serverSelector">@label.server@:</label>
   <select name="server" id="serverSelector">
-  <option value="biblehub" selected>@server.biblehub@
-  <option value="studybible">@server.studybible@
+  <option value="biblehub" selected>@server.biblehub@</option>
+  <option value="studybible">@server.studybible@</option>
   </select>
 
   <br><input type="submit" value="@label.submit@" id="submitButton">
@@ -26,14 +30,28 @@
 
   function checkNumber () {
     let message = null;
-    const number = parseInt(numberText.value, 10);
+    const text = numberText.value;
 
-    if (isNaN(number)) {
-      message = "not an integer";
+    if (text.length > 0) {
+      const regex = /^\s*(0|-?[1-9][0-9]*)\s*$/;
+      const matches = text.match(regex);
+
+      if (matches) {
+        const value = parseInt(matches[1], 10);
+        const minimum = 1;
+
+        if (value < minimum) {
+          message = "word number is less than " + minimum;
+        } else {
+          numberError.textContent = "";
+          submitButton.disabled = false;
+          return;
+        }
+      } else {
+        message = "word number must be an integer";
+      }
     } else {
-      numberError.textContent = "";
-      submitButton.disabled = false;
-      return;
+      message = "word number is required";
     }
 
     numberError.textContent = message;
@@ -42,6 +60,13 @@
 
   numberText.addEventListener("input",
     function () {
+      checkNumber();
+    }
+  );
+
+  lexiconSelector.addEventListener("change",
+    function () {
+      numberText.value = "";
       checkNumber();
     }
   );

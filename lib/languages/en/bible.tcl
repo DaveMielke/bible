@@ -161,15 +161,15 @@ proc setStrongsSubstitutions {substitutionsArray} {
    upvar 1 $substitutionsArray substitutions
    set substitutions(problem.statement) "The Strong's form has been filled out incorrectly."
 
-   set substitutions(label.lexicon) "Lexicon"
+   set substitutions(label.lexicon) "Lexicon Name"
    set substitutions(problem.lexicon) "An invalid lexicon name has been specified."
    set substitutions(lexicon.hebrew) "Hebrew"
    set substitutions(lexicon.greek) "Greek"
 
-   set substitutions(label.number) "Number"
+   set substitutions(label.number) "Word Number"
    set substitutions(problem.number) "An invalid word number has been specified."
 
-   set substitutions(label.server) "Server"
+   set substitutions(label.server) "Server Name"
    set substitutions(problem.server) "An invalid server name has been specified."
    set substitutions(server.biblehub) "Bible Hub"
    set substitutions(server.studybible) "Study Bible"
