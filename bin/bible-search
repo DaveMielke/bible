@@ -233,9 +233,9 @@ if {[lempty $argv]} {
    addKeywordOption optionDefinitions search mode "how to search for the specified words" $modeKeywords
    addIntegerOption optionDefinitions errors count "how many spelling errors to allow" $errorsMinimum $errorsMaximum
    processProgramArguments optionValues $optionDefinitions wordList "word ..." getArgumentsUsageSummary
-   verifyKeyword optionValues(mode) "search mode" $modeKeywords
+   verifyKeyword optionValues(search) "search mode" $modeKeywords
 
-   set searchMode $optionValues(mode)
+   set searchMode $optionValues(search)
    set caseSensitive $optionValues(case)
 
    if {[info exists optionValues(errors)]} {

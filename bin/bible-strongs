@@ -88,7 +88,7 @@ if {[lempty $argv]} {
    }
 
    addKeywordOption optionDefinitions lexicon name "which lexicon to use" $lexiconNames
-   addKeywordOption optionDefinitions server name "the Strong's server to use" $serverNames
+   addKeywordOption optionDefinitions server name "the server on which to perform the lookup" $serverNames
    processProgramArguments optionValues $optionDefinitions positionalArguments "word-number" getArgumentsUsageSummary
 
    verifyKeyword optionValues(lexicon) "lexicon name" $lexiconNames
