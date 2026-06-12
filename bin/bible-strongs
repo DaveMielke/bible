@@ -1,6 +1,6 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
-loadBookDefinitions
+setStrongsSubstitutions substitutions
 
 proc makeServerURL {} {
    global strongsLexicon strongsNumber strongsServer
@@ -21,13 +21,11 @@ proc makeServerURL {} {
 }
 
 set lexiconKeywords {hebrew greek}
-set numberMinimum 1
 set serverKeywords {biblehub studybible}
 
 if {[lempty $argv]} {
    cgiScript
    cgi_input
-   setStrongsSubstitutions substitutions
 
    cgiImport lexicon [lindex $lexiconKeywords 0]
    if {[set lexiconIndex [lsearch -exact $lexiconKeywords $lexicon]] < 0} {
@@ -37,7 +35,7 @@ if {[lempty $argv]} {
    }
 
    cgiImport number 
-   if {![testInteger $number $numberMinimum]} {
+   if {![testInteger $number $substitutions(lexicon.$strongsLexicon.minimum) $substitutions(lexicon.$strongsLexicon.maximum)]} {
       lappend problems $substitutions(problem.number)
    } else {
       set strongsNumber $number
@@ -87,7 +85,7 @@ if {[lempty $argv]} {
    set strongsServer $optionValues(server)
 
    if {[nextElement positionalArguments number]} {
-      verifyIntegerOption $number "word number" $numberMinimum
+      verifyIntegerOption $number "word number" $substitutions(lexicon.$strongsLexicon.minimum) $substitutions(lexicon.$strongsLexicon.maximum)
       set strongsNumber $number
    } else {
       syntaxError "word number not specified"

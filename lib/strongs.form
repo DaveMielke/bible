@@ -1,8 +1,8 @@
 <form method="get" action="strongs.cgi">
   <br><label for="lexiconSelector">@label.lexicon@:</label>
   <select name="lexicon" id="lexiconSelector">
-  <option value="hebrew" selected>@lexicon.hebrew@</option>
-  <option value="greek">@lexicon.greek@</option>
+  <option value="hebrew" selected>@lexicon.hebrew.label@</option>
+  <option value="greek">@lexicon.greek.label@</option>
   </select>
 
   <br><label for="numberText">@label.number@:</label>
@@ -28,6 +28,18 @@
   const numberError = document.getElementById("numberError");
   const submitButton = document.getElementById("submitButton");
 
+  const lexiconProperties = {
+    hebrew: {
+      minimum: @lexicon.hebrew.minimum@,
+      maximum: @lexicon.hebrew.maximum@,
+    },
+
+    greek: {
+      minimum: @lexicon.greek.minimum@,
+      maximum: @lexicon.greek.maximum@,
+    },
+  };
+
   function checkNumber () {
     let message = null;
     const text = numberText.value;
@@ -38,10 +50,14 @@
 
       if (matches) {
         const value = parseInt(matches[1], 10);
-        const minimum = 1;
+        const lexicon = lexiconProperties[lexiconSelector.value];
+        const minimum = lexicon.minimum;
+        const maximum = lexicon.maximum;
 
         if (value < minimum) {
           message = "word number is less than " + minimum;
+        } else if (value > maximum) {
+          message = "word number is greater than " + maximum;
         } else {
           numberError.textContent = "";
           submitButton.disabled = false;

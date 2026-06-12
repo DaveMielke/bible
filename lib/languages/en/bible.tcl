@@ -163,8 +163,14 @@ proc setStrongsSubstitutions {substitutionsArray} {
 
    set substitutions(label.lexicon) "Lexicon Name"
    set substitutions(problem.lexicon) "An invalid lexicon name has been specified."
-   set substitutions(lexicon.hebrew) "Hebrew"
-   set substitutions(lexicon.greek) "Greek"
+
+   set substitutions(lexicon.hebrew.label) "Hebrew"
+   set substitutions(lexicon.hebrew.minimum) 1
+   set substitutions(lexicon.hebrew.maximum) 8674
+
+   set substitutions(lexicon.greek.label) "Greek"
+   set substitutions(lexicon.greek.minimum) 1
+   set substitutions(lexicon.greek.maximum) 5624
 
    set substitutions(label.number) "Word Number"
    set substitutions(problem.number) "An invalid word number has been specified."
