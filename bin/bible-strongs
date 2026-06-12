@@ -2,7 +2,20 @@
 source [file join [file dirname $argv0] .. lib bible.tcl]
 setStrongsSubstitutions substitutions
 
-proc makeServerURL {} {
+proc getLexiconProperty {property} {
+   global substitutions strongsLexicon
+   return $substitutions(lexicon.$strongsLexicon.$property)
+}
+
+proc getNumberMinimum {} {
+   return [getLexiconProperty minimum]
+}
+
+proc getNumberMaximum {} {
+   return [getLexiconProperty maximum]
+}
+
+proc makeLookupURL {} {
    global strongsLexicon strongsNumber strongsServer
 
    switch -exact $strongsServer {
@@ -35,7 +48,7 @@ if {[lempty $argv]} {
    }
 
    cgiImport number 
-   if {![testInteger $number $substitutions(lexicon.$strongsLexicon.minimum) $substitutions(lexicon.$strongsLexicon.maximum)]} {
+   if {![testInteger $number [getNumberMinimum] [getNumberMaximum]]} {
       lappend problems $substitutions(problem.number)
    } else {
       set strongsNumber $number
@@ -62,7 +75,7 @@ if {[lempty $argv]} {
       addLine "</ul>"
       endDocument stdout
    } else {
-      cgi_redirect [makeServerURL]
+      cgi_redirect [makeLookupURL]
    }
 } else {
    proc getArgumentsUsageSummary {} {
@@ -85,13 +98,13 @@ if {[lempty $argv]} {
    set strongsServer $optionValues(server)
 
    if {[nextElement positionalArguments number]} {
-      verifyIntegerOption $number "word number" $substitutions(lexicon.$strongsLexicon.minimum) $substitutions(lexicon.$strongsLexicon.maximum)
+      verifyIntegerOption $number "word number" [getNumberMinimum] [getNumberMaximum]
       set strongsNumber $number
    } else {
       syntaxError "word number not specified"
    }
 
-   puts stdout [makeServerURL]
+   puts stdout [makeLookupURL]
 }
 
 exit 0
