@@ -448,7 +448,7 @@ proc addSelector {name value internalList externalList} {
          set selected ""
       }
 
-      addLine "<option value=\"$internal\"$selected>$external"
+      addLine "<option value=\"$internal\"$selected>$external</option>"
    }
 
    addLine "</select>"

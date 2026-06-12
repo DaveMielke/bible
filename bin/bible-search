@@ -1,5 +1,6 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
+setResultsSubstitutions substitutions
 loadBookDefinitions
 
 proc escapeString {string} {
@@ -23,7 +24,7 @@ proc joinWords {operator} {
 }
 
 proc findVerses {code} {
-   global selectionMode caseSensitive spellingErrors
+   global searchMode caseSensitive spellingErrors
    bindVerseVariables
 
    set command [list < /dev/null glimpse -y -h -H [getGlimpseDirectory]]
@@ -34,7 +35,7 @@ proc findVerses {code} {
    lappend command -$spellingErrors
    lappend command -e
 
-   switch -exact -- $selectionMode {
+   switch -exact -- $searchMode {
       every {
          lappend command [joinWords \;]
       }
@@ -48,7 +49,7 @@ proc findVerses {code} {
       }
 
       default {
-         internalError "unexpected mode value: $selectionMode"
+         internalError "unexpected search mode: $searchMode"
       }
    }
 
@@ -63,21 +64,13 @@ proc findVerses {code} {
 set caseKeywords {ignore respect}
 set modeKeywords {every any phrase}
 set styleKeywords {verses refs}
+
 set errorsMinimum 0
 set errorsMaximum 8
 
 if {[lempty $argv]} {
    cgiScript
-
-   setResultsSubstitutions substitutions
-   set caseSensitive [lindex $caseKeywords 0]
-   set selectionMode [lindex $modeKeywords 0]
-   set resultStyle [lindex $styleKeywords 0]
-   set spellingErrors $errorsMinimum
    cgi_input
-
-   startBasicDocument search.cgi [getResultsTitle]
-   cgi_content_type "text/html"
 
    if {![cgiImport data ""]} {
       lappend problems $substitutions(input.empty)
@@ -85,18 +78,11 @@ if {[lempty $argv]} {
       set wordList [split $data]
    }
 
-   cgiImport style [lindex $styleKeywords 0]
-   if {[set styleIndex [lsearch -exact $styleKeywords $style]] < 0} {
-      lappend problems $substitutions(style.problem)
-   } else {
-      set resultStyle [lindex $styleKeywords $styleIndex]
-   }
-
    cgiImport mode [lindex $modeKeywords 0]
    if {[set modeIndex [lsearch -exact $modeKeywords $mode]] < 0} {
       lappend problems $substitutions(mode.problem)
    } else {
-      set selectionMode [lindex $modeKeywords $modeIndex]
+      set searchMode [lindex $modeKeywords $modeIndex]
    }
 
    cgiImport case [lindex $caseKeywords 0]
@@ -113,6 +99,16 @@ if {[lempty $argv]} {
       set spellingErrors $errors
    }
 
+   cgiImport style [lindex $styleKeywords 0]
+   if {[set styleIndex [lsearch -exact $styleKeywords $style]] < 0} {
+      lappend problems $substitutions(style.problem)
+   } else {
+      set resultStyle [lindex $styleKeywords $styleIndex]
+   }
+
+   startBasicDocument search.cgi [getResultsTitle]
+   cgi_content_type "text/html"
+
    if {[info exists problems]} {
       addLine $substitutions(statement.problem)
       addLine "<ul>"
@@ -125,23 +121,30 @@ if {[lempty $argv]} {
       addLine "<input name=\"data\" type=\"text\" value=\"$data\" size=\"40\">"
       addLine "<input type=\"submit\" value=\"$substitutions(label.search)\">"
       addLine "<ul>"
-      addLine "<li>"
-      addSelector style $style $styleKeywords [list $substitutions(style.verses) $substitutions(style.refs)]
+
       addLine "<li>"
       addSelector mode $mode $modeKeywords [list $substitutions(mode.every) $substitutions(mode.any) $substitutions(mode.phrase)]
+
       addLine "<li>"
       addSelector case $case $caseKeywords [list $substitutions(case.ignore) $substitutions(case.respect)]
+
       addLine "<li>"
       for {set i $errorsMinimum} {$i <= $errorsMaximum} {incr i} {
          lappend internalErrorsList $i
          lappend externalErrorsList [getResults_errorsLimit $i]
       }
       addSelector errors $errors $internalErrorsList $externalErrorsList
+
+      addLine "<li>"
+      addSelector style $style $styleKeywords [list $substitutions(style.verses) $substitutions(style.refs)]
+
       addLine "</ul>"
       addLine "</form>"
+
       set countMark [markDocument]
       set verseCount 0
-      switch -exact $resultStyle {
+
+      switch -exact -- $resultStyle {
          verses {
             findVerses {
                if {[incr verseCount] == 1} {
@@ -162,6 +165,7 @@ if {[lempty $argv]} {
                addLine "</dl>"
             }
          }
+
          refs {
             set currentBook ""
             findVerses {
@@ -204,9 +208,11 @@ if {[lempty $argv]} {
             }
          }
       }
+
       if {$verseCount > 0} {
          addLine $substitutions(statement.end)
       }
+
       insertLine $countMark "<h3>[getResults_versesFound $verseCount]</h3>"
       addSearchHelpParagraph
    }
@@ -221,19 +227,19 @@ if {[lempty $argv]} {
 
    set optionDefinitions {
       {case flag "respect case when matching"}
-      {noheaders flag "don't output the table headers"}
+      {noheaders flag "don't show the verse table column headers"}
    }
 
-   addKeywordOption optionDefinitions mode "how to apply the specified words" $modeKeywords
-   addIntegerOption optionDefinitions errors "how many spelling errors to allow" $errorsMinimum $errorsMaximum
+   addKeywordOption optionDefinitions search mode "how to search for the specified words" $modeKeywords
+   addIntegerOption optionDefinitions errors count "how many spelling errors to allow" $errorsMinimum $errorsMaximum
    processProgramArguments optionValues $optionDefinitions wordList "word ..." getArgumentsUsageSummary
-   verifyKeyword optionValues(mode) mode $modeKeywords
+   verifyKeyword optionValues(mode) "search mode" $modeKeywords
 
-   set selectionMode $optionValues(mode)
+   set searchMode $optionValues(mode)
    set caseSensitive $optionValues(case)
 
    if {[info exists optionValues(errors)]} {
-      verifyInteger $optionValues(errors) errors $errorsMinimum $errorsMaximum
+      verifyInteger $optionValues(errors) "spelling errors count" $errorsMinimum $errorsMaximum
       set spellingErrors $optionValues(errors)
    } else {
       set spellingErrors $errorsMinimum

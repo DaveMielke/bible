@@ -18,7 +18,7 @@ proc getNumberMaximum {} {
 proc makeLookupURL {} {
    global strongsLexicon strongsNumber strongsServer
 
-   switch -exact $strongsServer {
+   switch -exact -- $strongsServer {
       biblehub {
          return "https://bibleHub.com/$strongsLexicon/$strongsNumber.htm"
       }
@@ -87,8 +87,8 @@ if {[lempty $argv]} {
    set optionDefinitions {
    }
 
-   addKeywordOption optionDefinitions lexicon "which lexicon to use" $lexiconNames
-   addKeywordOption optionDefinitions server "the Strong's server to use" $serverNames
+   addKeywordOption optionDefinitions lexicon name "which lexicon to use" $lexiconNames
+   addKeywordOption optionDefinitions server name "the Strong's server to use" $serverNames
    processProgramArguments optionValues $optionDefinitions positionalArguments "word-number" getArgumentsUsageSummary
 
    verifyKeyword optionValues(lexicon) "lexicon name" $lexiconNames
