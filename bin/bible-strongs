@@ -28,23 +28,23 @@ proc makeLookupURL {} {
       }
 
       default {
-         internalError "unexpected Strong's server: $strongsServer"
+         internalError "unexpected server name: $strongsServer"
       }
    }
 }
 
-set lexiconKeywords {hebrew greek}
-set serverKeywords {biblehub studybible}
+set lexiconNames {hebrew greek}
+set serverNames {biblehub studybible}
 
 if {[lempty $argv]} {
    cgiScript
    cgi_input
 
-   cgiImport lexicon [lindex $lexiconKeywords 0]
-   if {[set lexiconIndex [lsearch -exact $lexiconKeywords $lexicon]] < 0} {
+   cgiImport lexicon [lindex $lexiconNames 0]
+   if {[set lexiconIndex [lsearch -exact $lexiconNames $lexicon]] < 0} {
       lappend problems $substitutions(problem.lexicon)
    } else {
-      set strongsLexicon [lindex $lexiconKeywords $lexiconIndex]
+      set strongsLexicon [lindex $lexiconNames $lexiconIndex]
    }
 
    cgiImport number 
@@ -54,11 +54,11 @@ if {[lempty $argv]} {
       set strongsNumber $number
    }
 
-   cgiImport server [lindex $serverKeywords 0]
-   if {[set serverIndex [lsearch -exact $serverKeywords $server]] < 0} {
+   cgiImport server [lindex $serverNames 0]
+   if {[set serverIndex [lsearch -exact $serverNames $server]] < 0} {
       lappend problems $substitutions(problem.server)
    } else {
-      set strongsServer [lindex $serverKeywords $serverIndex]
+      set strongsServer [lindex $serverNames $serverIndex]
    }
 
    if {[info exists problems]} {
@@ -87,19 +87,20 @@ if {[lempty $argv]} {
    set optionDefinitions {
    }
 
-   addKeywordOption optionDefinitions lexicon "which lexicon to use" $lexiconKeywords
-   addKeywordOption optionDefinitions server "the Strong's server to use" $serverKeywords
+   addKeywordOption optionDefinitions lexicon "which lexicon to use" $lexiconNames
+   addKeywordOption optionDefinitions server "the Strong's server to use" $serverNames
    processProgramArguments optionValues $optionDefinitions positionalArguments "word-number" getArgumentsUsageSummary
 
-   verifyKeywordOption optionValues(lexicon) lexicon $lexiconKeywords
+   verifyKeyword optionValues(lexicon) "lexicon name" $lexiconNames
    set strongsLexicon $optionValues(lexicon)
 
-   verifyKeywordOption optionValues(server) server $serverKeywords
+   verifyKeyword optionValues(server) "server name" $serverNames
    set strongsServer $optionValues(server)
 
    if {[nextElement positionalArguments number]} {
-      verifyIntegerOption $number "word number" [getNumberMinimum] [getNumberMaximum]
+      verifyInteger $number "word number" [getNumberMinimum] [getNumberMaximum]
       set strongsNumber $number
+      noMorePositionalArguments $positionalArguments
    } else {
       syntaxError "word number not specified"
    }

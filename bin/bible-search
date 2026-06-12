@@ -227,13 +227,13 @@ if {[lempty $argv]} {
    addKeywordOption optionDefinitions mode "how to apply the specified words" $modeKeywords
    addIntegerOption optionDefinitions errors "how many spelling errors to allow" $errorsMinimum $errorsMaximum
    processProgramArguments optionValues $optionDefinitions wordList "word ..." getArgumentsUsageSummary
-   verifyKeywordOption optionValues(mode) mode $modeKeywords
+   verifyKeyword optionValues(mode) mode $modeKeywords
 
    set selectionMode $optionValues(mode)
    set caseSensitive $optionValues(case)
 
    if {[info exists optionValues(errors)]} {
-      verifyIntegerOption $optionValues(errors) errors $errorsMinimum $errorsMaximum
+      verifyInteger $optionValues(errors) errors $errorsMinimum $errorsMaximum
       set spellingErrors $optionValues(errors)
    } else {
       set spellingErrors $errorsMinimum
