@@ -78,32 +78,25 @@ if {[lempty $argv]} {
       cgi_redirect [makeLookupURL]
    }
 } else {
-   proc getArgumentsUsageSummary {} {
-      set lines [list]
-      lappend lines "If no arguments (neither options nor parameters) are specified then the Strong's Results web page is generated."
-      return $lines
+   proc parseScriptArguments {} {
+      set parser [::brltty::ScriptArgumentsParser new]
+      $parser setPurpose "Look up a word within an online Strong's concordance."
+
+      $parser stringOption lexiconName l lexicon name "which lexicon to use" $::lexiconNames
+      $parser stringOption serverName s server name "the server on which to perform the lookup" $::serverNames
+      $parser requiredParameter wordNumber word "the word number within the selected lexicon"
+
+      $parser addNotes {
+         "If no arguments (neither options nor parameters) are specified then the Strong's Results web page is generated."
+      }
+
+      return [$parser parseArguments]
    }
 
-   set optionDefinitions {
-   }
-
-   addKeywordOption optionDefinitions lexicon name "which lexicon to use" $lexiconNames
-   addKeywordOption optionDefinitions server name "the server on which to perform the lookup" $serverNames
-   processProgramArguments optionValues $optionDefinitions positionalArguments "word-number" getArgumentsUsageSummary
-
-   verifyKeyword optionValues(lexicon) "lexicon name" $lexiconNames
-   set strongsLexicon $optionValues(lexicon)
-
-   verifyKeyword optionValues(server) "server name" $serverNames
-   set strongsServer $optionValues(server)
-
-   if {[nextElement positionalArguments number]} {
-      verifyInteger $number "word number" [getNumberMinimum] [getNumberMaximum]
-      set strongsNumber $number
-      noMorePositionalArguments $positionalArguments
-   } else {
-      syntaxError "word number not specified"
-   }
+   set argumentValues [parseScriptArguments]
+   set strongsLexicon [dict get $argumentValues lexiconName]
+   set strongsServer [dict get $argumentValues serverName]
+   set strongsNumber [dict get $argumentValues wordNumber]
 
    puts stdout [makeLookupURL]
 }
