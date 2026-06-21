@@ -1,17 +1,23 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
 
-set optionDefinitions {
+proc parseScriptArguments {} {
+   set parser [::brltty::ScriptArgumentsParser new]
+
+   return [$parser parseArguments]
 }
 
-processProgramArguments optionValues $optionDefinitions
+set argumentValues [parseScriptArguments]
 
 file mkdir [set hypertextDirectory [getHypertextDirectory]]
-foreach name [glob -directory [set filesDirectory [getFilesDirectory]] -tails -nocomplain *] {
-   set fromPath [file join $filesDirectory $name]
-   set oldPath [file join $hypertextDirectory $name]
+
+foreach fileName [glob -directory [set filesDirectory [getFilesDirectory]] -tails -nocomplain -- *] {
+   set filePath [file join $filesDirectory $fileName]
+   set oldPath [file join $hypertextDirectory $fileName]
    set newPath "$oldPath.new"
-   file copy -force -- $fromPath $newPath
-   refreshFile $newPath $oldPath [file executable $fromPath]
+
+   file copy -force -- $filePath $newPath
+   refreshFile $newPath $oldPath [file executable $filePath]
 }
+
 exit 0

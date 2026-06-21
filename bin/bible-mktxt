@@ -1,12 +1,14 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
+loadBookDefinitions
 
-set optionDefinitions {
+proc parseScriptArguments {} {
+   set parser [::brltty::ScriptArgumentsParser new]
+
+   return [$parser parseArguments]
 }
 
-processProgramArguments optionValues $optionDefinitions
-
-loadBookDefinitions
+set argumentValues [parseScriptArguments]
 
 proc putLine {line} {
    global bookStream

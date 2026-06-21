@@ -1,12 +1,15 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
 
-set optionDefinitions {
-   {force flag "recreate the index"}
+proc parseScriptArguments {} {
+   set parser [::brltty::ScriptArgumentsParser new]
+
+   $parser flagOption recreateIndex f force "recreate the index"
+
+   return [$parser parseArguments]
 }
 
-processProgramArguments optionValues $optionDefinitions
-
+set argumentValues [parseScriptArguments]
 set versesFile [getVersesFile]
 set indexDirectory [getGlimpseDirectory]
 set indexFile [file join $indexDirectory .glimpse_index]
@@ -16,7 +19,7 @@ if {![file exists $indexFile]} {
    set action creating
 } elseif {[file mtime $versesFile] > [file mtime $indexFile]} {
    set action updating
-} elseif {$optionValues(force)} {
+} elseif {[dict get $argumentValues recreateIndex]} {
    set action recreating
 } else {
    logDetail "index already created: $indexFile"

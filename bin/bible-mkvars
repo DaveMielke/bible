@@ -1,22 +1,28 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
 
-set optionDefinitions {
+proc parseScriptArguments {} {
+   set parser [::brltty::ScriptArgumentsParser new]
+
+   return [$parser parseArguments]
 }
 
-processProgramArguments optionValues $optionDefinitions
+set argumentValues [parseScriptArguments]
 
 set variables [list]
 lappend variables [list BIBLE_ROOT $bible(root)]
 lappend variables [list BIBLE_VERSION $bible(version)]
+
 set oldFile [getVariablesFile]
 set newFile "$oldFile.new"
 file mkdir [file dirname $oldFile]
-set stream [open $newFile {WRONLY TRUNC CREAT}]
-foreach variable $variables {
-   lassign $variable name value
-   puts $stream "$name=$value"
+
+withChannel channel [open $newFile {WRONLY TRUNC CREAT}] {
+   foreach variable $variables {
+      lassign $variable name value
+      puts $channel "$name=$value"
+   }
 }
-close $stream; unset stream
+
 refreshFile $newFile $oldFile 0
 exit 0

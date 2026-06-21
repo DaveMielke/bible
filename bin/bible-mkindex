@@ -1,18 +1,23 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
 
-set optionDefinitions {
+proc parseScriptArguments {} {
+   set parser [::brltty::ScriptArgumentsParser new]
+
+   $parser integerOption columnCount c columns count.3 "the number of book name columns" 1 5
+
+   return [$parser parseArguments]
 }
 
-set columns 3
-processProgramArguments optionValues $optionDefinitions
+set argumentValues [parseScriptArguments]
+set bookNameColumns [dict get $argumentValues columnCount]
 
 proc makeTestamentIndex {testamentName firstBook lastBook} {
-   global columns
+   global bookNameColumns
 
    set keys [lrange [getBookKeys] $firstBook $lastBook]
-   set rows [expr {([llength $keys] + $columns - 1) / $columns}]
-   set width "[expr {100 / $columns}]%"
+   set rows [expr {([llength $keys] + $bookNameColumns - 1) / $bookNameColumns}]
+   set width "[expr {100 / $bookNameColumns}]%"
 
    addLine "<h3>[getTestamentTitle_$testamentName]</h3>"
    addLine "<table class=\"book-index\">"
@@ -20,7 +25,7 @@ proc makeTestamentIndex {testamentName firstBook lastBook} {
    loop row 0 $rows {
       addLine "<tr>"
 
-      loop column 0 $columns {
+      loop column 0 $bookNameColumns {
          if {[clength [set key [lindex $keys [expr {($column * $rows) + $row}]]]] > 0} {
             addLine "<td>"
             addFileReference [getBookName $key] [getBookURL [getBookIndex $key]]

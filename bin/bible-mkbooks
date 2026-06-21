@@ -1,11 +1,16 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
 
-set optionDefinitions {
+proc parseScriptArguments {} {
+   set parser [::brltty::ScriptArgumentsParser new]
+
+   $parser integerOption wordLimit w words count.50 "the word limit for a verse within a chatper index" 5 80
+
+   return [$parser parseArguments]
 }
 
-set indexLimit 50
-processProgramArguments optionValues $optionDefinitions
+set argumentValues [parseScriptArguments]
+set wordLimit [dict get $argumentValues wordLimit]
 
 proc writeIndex {} {
    global indexLines chapterCount
@@ -119,7 +124,7 @@ forVerses {
          addLine "<table class=\"verse-table\">"
       }
 
-      if {[set wordCount [expr {min($verseWordCount,$indexLimit-[llength $indexWords])}]] > 0} {
+      if {[set wordCount [expr {min($verseWordCount,$wordLimit-[llength $indexWords])}]] > 0} {
          lvarcat indexWords [lrange $verseWords 0 [expr {$wordCount - 1}]]
       }
 

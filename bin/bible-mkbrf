@@ -1,13 +1,24 @@
 #!/usr/bin/env tclsh
 source [file join [file dirname $argv0] .. lib bible.tcl]
 
-set optionDefinitions {
+set defaultBrlttyRoot "/home/dave/brltty/git/main"
+set defaultContractionTable "en-us-g2"
+set defaultOutputWidth 40
+
+proc parseScriptArguments {} {
+   set parser [::brltty::ScriptArgumentsParser new]
+
+   $parser stringOption brlttyRoot b brltty-root directory.$::defaultBrlttyRoot "brltty's build root"
+   $parser stringOption contractionTable c contraction-table name.$::defaultContractionTable "the name of the contraction table to use"
+   $parser integerOption outputWidth w output-width columns.$::defaultOutputWidth "the length at which an output line will be wrapped" 16 80
+
+   return [$parser parseArguments]
 }
 
-set brlttyRoot "/home/dave/brltty/git/main"
-set contractionTable "en-us-g2"
-set brailleWidth 40
-processProgramArguments optionValues $optionDefinitions
+set argumentValues [parseScriptArguments]
+set brlttyRoot [dict get $argumentValues brlttyRoot]
+set contractionTable [dict get $argumentValues contractionTable]
+set outputWidth [dict get $argumentValues outputWidth]
 
 set textItalicSymbol "@"
 set brailleItalicSymbol "."
@@ -69,12 +80,12 @@ proc convertText {text} {
 }
 
 proc writeText {text} {
-   global brailleWidth
+   global outputWidth
    set braille [convertText $text]
 
-   while {[string length $braille] > $brailleWidth} {
-      if {[set index [string last " " [string range $braille 0 $brailleWidth]]] == -1} {
-         if {[set index [string first " " $braille $brailleWidth+1]] == -1} {
+   while {[string length $braille] > $outputWidth} {
+      if {[set index [string last " " [string range $braille 0 $outputWidth]]] == -1} {
+         if {[set index [string first " " $braille $outputWidth+1]] == -1} {
             break
          }
       }
