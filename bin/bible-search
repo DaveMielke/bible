@@ -225,8 +225,8 @@ if {[lempty $argv]} {
 
       $parser flagOption noHeaders n no-headers "don't show the verse table column headers"
       $parser stringOption searchMode s search mode "how to search for the specified words" $::modeKeywords
-      $parser flagOption caseSensitive c respect-case "respect case when matching"
-      $parser integerOption spellingErrors e errors count "how many spelling errors to allow" $::errorsMinimum $::errorsMaximum
+      $parser flagOption caseSensitive c case "respect case when matching"
+      $parser integerOption spellingErrors e errors count.$::errorsMinimum "how many spelling errors to allow" $::errorsMinimum $::errorsMaximum
       $parser extraParameters wordList word "the words to search for"
 
       $parser addNotes {
