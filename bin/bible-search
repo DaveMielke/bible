@@ -243,7 +243,7 @@ if {[lempty $argv]} {
    set searchMode [dict get $argumentValues searchMode]
    set caseSensitive [dict get $argumentValues caseSensitive]
    set spellingErrors [dict get $argumentValues spellingErrors]
-   set wordList [concat [list [dict get $argumentValues firstWord]] [dict get $argumentValues additionalWords]]
+   set wordList [list [dict get $argumentValues firstWord] {*}[dict get $argumentValues additionalWords]]
 
    set verseTable [list]
    findVerses {
